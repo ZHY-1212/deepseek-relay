@@ -50,7 +50,7 @@ class RateLimitMiddleware:
                 retry_after = int(timestamps[0] + window - now) + 1
                 response = JSONResponse(
                     status_code=429,
-                    content={"detail": f"Rate limit exceeded. Retry after {retry_after}s"},
+                    content={"detail": f"请求过于频繁，请 {retry_after} 秒后重试"},
                     headers={"Retry-After": str(retry_after)},
                 )
                 await response(scope, receive, send)

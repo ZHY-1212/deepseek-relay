@@ -5,7 +5,7 @@ from app.models.schemas import ChatRequest
 from app.services.proxy_service import ProxyService
 from app.services.billing_service import BillingService
 
-router = APIRouter(prefix="/v1", tags=["proxy"])
+router = APIRouter(prefix="/v1", tags=["API 代理"])
 proxy_service = ProxyService()
 billing_service = BillingService()
 

@@ -17,7 +17,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
         auth_header = request.headers.get("Authorization", "")
         if not auth_header.startswith("Bearer "):
-            raise HTTPException(status_code=401, detail="Missing Bearer token")
+            raise HTTPException(status_code=401, detail="缺少认证 Token")
 
         token = auth_header.removeprefix("Bearer ")
 
@@ -30,34 +30,34 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 key_hash = hash_key(token)
                 user = user_store.get_by_api_key_hash(key_hash)
                 if not user:
-                    raise HTTPException(status_code=401, detail="Invalid API key")
+                    raise HTTPException(status_code=401, detail="API Key 无效")
                 request.state.auth_method = "api_key"
             else:
                 # JWT auth (for web chat)
                 payload = verify_access_token(token)
                 if not payload:
-                    raise HTTPException(status_code=401, detail="Invalid or expired JWT")
+                    raise HTTPException(status_code=401, detail="登录已过期，请重新登录")
                 user = user_store.get_by_id(payload["sub"])
                 if not user:
-                    raise HTTPException(status_code=401, detail="User not found")
+                    raise HTTPException(status_code=401, detail="用户不存在")
                 request.state.auth_method = "jwt"
             if user.is_banned:
-                raise HTTPException(status_code=403, detail="Account banned")
+                raise HTTPException(status_code=403, detail="账号已被封禁")
             request.state.user = user
 
         # Dashboard / Admin routes: authenticate via JWT
         else:
             payload = verify_access_token(token)
             if not payload:
-                raise HTTPException(status_code=401, detail="Invalid or expired JWT")
+                raise HTTPException(status_code=401, detail="登录已过期，请重新登录")
             user = user_store.get_by_id(payload["sub"])
             if not user:
-                raise HTTPException(status_code=401, detail="User not found")
+                raise HTTPException(status_code=401, detail="用户不存在")
             if user.is_banned:
-                raise HTTPException(status_code=403, detail="Account banned")
+                raise HTTPException(status_code=403, detail="账号已被封禁")
             # Admin check
             if path.startswith("/admin/") and not user.is_admin:
-                raise HTTPException(status_code=403, detail="Admin access required")
+                raise HTTPException(status_code=403, detail="需要管理员权限")
             request.state.user = user
             request.state.auth_method = "jwt"
 

@@ -43,9 +43,9 @@ async def toggle_ban(user_id: str, request: Request):
     admin = get_current_user(request)
     user = user_store.get_by_id(user_id)
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="用户不存在")
     if user.is_admin:
-        raise HTTPException(status_code=400, detail="Cannot ban admin user")
+        raise HTTPException(status_code=400, detail="不能封禁管理员")
 
     user.is_banned = not user.is_banned
     user.updated_at = datetime.now(timezone.utc).isoformat()
@@ -60,11 +60,11 @@ async def change_tier(user_id: str, body: ChangeTierRequest, request: Request):
     get_current_user(request)
     tier = body.tier
     if tier not in ("free", "pro", "vip"):
-        raise HTTPException(status_code=400, detail="Invalid tier")
+        raise HTTPException(status_code=400, detail="无效的套餐类型")
 
     user = user_store.get_by_id(user_id)
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="用户不存在")
 
     tier_def = tier_store.get(tier)
     user.tier = TierEnum(tier)

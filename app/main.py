@@ -42,7 +42,7 @@ async def lifespan(app: FastAPI):
     logger.info("DeepSeek Relay shut down")
 
 
-app = FastAPI(title="DeepSeek Relay", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="DeepSeek Relay - AI API 平台", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

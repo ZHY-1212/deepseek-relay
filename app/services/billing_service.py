@@ -11,16 +11,16 @@ class BillingService:
         """Raise HTTPException if user exceeded limits."""
         tier = tier_store.get(user.tier.value)
         if not tier:
-            raise HTTPException(status_code=500, detail="Tier not found")
+            raise HTTPException(status_code=500, detail="套餐配置异常")
 
         requests_per_day = tier.get("requests_per_day")
         if requests_per_day is not None:
             today_count = usage_store.count_requests_today(user.id)
             if today_count >= requests_per_day:
-                raise HTTPException(status_code=429, detail=f"Daily request limit ({requests_per_day}) exceeded")
+                raise HTTPException(status_code=429, detail=f"今日请求次数已达上限（{requests_per_day}次），请明日再试")
 
         if user.balance_tokens <= 0:
-            raise HTTPException(status_code=429, detail="Insufficient token balance. Upgrade your plan.")
+            raise HTTPException(status_code=429, detail="Token 余额不足，请升级套餐")
 
     def check_and_replenish(self, user: User, tier_store, user_store) -> User:
         """Replenish tokens if it's a new month."""

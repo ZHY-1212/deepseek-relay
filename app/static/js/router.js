@@ -30,6 +30,11 @@ function navigate() {
         nav.style.display = 'none';
     }
 
+    // Highlight active nav link
+    document.querySelectorAll('.nav-links a').forEach(link => {
+        link.classList.toggle('active', link.getAttribute('href') === hash);
+    });
+
     const renderFn = routes[hash];
     const app = document.getElementById('app');
     if (renderFn) {
@@ -37,7 +42,7 @@ function navigate() {
         app.innerHTML = '';
         currentPage = renderFn(app);
     } else {
-        app.innerHTML = '<h2>404 Not Found</h2>';
+        app.innerHTML = '<h2 style="text-align:center;padding:4rem;color:var(--text-secondary)">页面不存在</h2>';
     }
 }
 

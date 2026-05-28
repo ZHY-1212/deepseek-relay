@@ -8,7 +8,7 @@ from app.models.schemas import RegisterRequest, LoginRequest
 from app.auth.jwt_handler import create_access_token
 from app.auth.api_key_handler import generate_api_key
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter(prefix="/auth", tags=["认证"])
 
 
 @router.post("/register")
@@ -16,13 +16,13 @@ async def register(req: RegisterRequest):
     from app.main import user_store, tier_store
 
     if len(req.password) < 8:
-        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+        raise HTTPException(status_code=400, detail="密码至少 8 位")
     if not any(c.isalpha() for c in req.password) or not any(c.isdigit() for c in req.password):
-        raise HTTPException(status_code=400, detail="Password must contain both letters and numbers")
+        raise HTTPException(status_code=400, detail="密码需包含字母和数字")
     if user_store.get_by_email(req.email):
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=400, detail="该邮箱已注册")
     if user_store.get_by_username(req.username):
-        raise HTTPException(status_code=400, detail="Username already taken")
+        raise HTTPException(status_code=400, detail="该用户名已被使用")
 
     hashed_pw = bcrypt.hashpw(req.password.encode(), bcrypt.gensalt()).decode()
     raw_key, key_hash, key_prefix = generate_api_key()
@@ -68,13 +68,13 @@ async def login(req: LoginRequest):
 
     user = user_store.get_by_email(req.email)
     if not user:
-        raise HTTPException(status_code=401, detail="Invalid email or password")
+        raise HTTPException(status_code=401, detail="邮箱或密码错误")
 
     if not bcrypt.checkpw(req.password.encode(), user.hashed_password.encode()):
-        raise HTTPException(status_code=401, detail="Invalid email or password")
+        raise HTTPException(status_code=401, detail="邮箱或密码错误")
 
     if user.is_banned:
-        raise HTTPException(status_code=403, detail="Account banned")
+        raise HTTPException(status_code=403, detail="账号已被封禁")
 
     access_token = create_access_token(user.id, user.is_admin)
 
