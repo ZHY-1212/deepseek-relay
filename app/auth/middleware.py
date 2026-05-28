@@ -4,7 +4,7 @@ from app.auth.jwt_handler import verify_access_token
 from app.auth.api_key_handler import hash_key
 from app.store.user_store import UserStore
 
-PUBLIC_PATHS = {"/", "/health", "/auth/login", "/auth/register", "/docs", "/openapi.json", "/favicon.ico"}
+PUBLIC_PATHS = {"/", "/app", "/health", "/auth/login", "/auth/register", "/docs", "/openapi.json", "/favicon.ico"}
 STATIC_PREFIXES = ("/static/",)
 
 
