@@ -4,36 +4,32 @@ registerRoute('#/chat', (container) => {
 
     function render() {
         container.innerHTML = `
-            <h2>Chat</h2>
+            <h2>AI 对话</h2>
             <div class="card">
                 <div id="chat-messages">
-                    ${messages.length === 0 ? '<p style="color:var(--pico-muted-color);text-align:center">Send a message to start chatting with DeepSeek</p>' : ''}
+                    ${messages.length === 0 ? '<p style="color:var(--text-muted);text-align:center;padding-top:160px">输入消息开始与 DeepSeek 对话</p>' : ''}
                     ${messages.map(m => `
                     <div class="chat-msg ${m.role}">
-                        <div class="role">${m.role} ${m.tokens ? '<span class="tokens">' + m.tokens + ' tokens</span>' : ''}</div>
-                        <div class="content">${escapeHtml(m.content)}</div>
+                        <div class="role">${m.role === 'user' ? '你' : 'AI'} ${m.tokens ? '<span class="tokens">' + m.tokens + ' tokens</span>' : ''}</div>
+                        <div class="bubble">${escapeHtml(m.content)}</div>
                     </div>
                     `).join('')}
                     <div id="streaming-msg" class="chat-msg assistant" style="display:none">
-                        <div class="role">assistant <span id="streaming-indicator">streaming...</span></div>
-                        <div class="content" id="streaming-content"></div>
+                        <div class="role">AI <span id="streaming-indicator"></span></div>
+                        <div class="bubble" id="streaming-content"></div>
                     </div>
                 </div>
                 <form id="chat-form">
-                    <fieldset role="group">
-                        <input type="text" id="chat-input" placeholder="Type your message..." autocomplete="off">
-                        <button type="submit" id="btn-send" class="contrast">Send</button>
-                    </fieldset>
-                    <div style="display:flex;gap:1rem;align-items:center;margin-top:0.5rem">
-                        <label style="display:flex;align-items:center;gap:0.3rem">
-                            <input type="checkbox" id="stream-toggle"> Stream
-                        </label>
-                        <label>Model
-                            <select id="model-select">
-                                <option value="deepseek-chat">deepseek-chat</option>
-                                <option value="deepseek-reasoner">deepseek-reasoner</option>
-                            </select>
-                        </label>
+                    <div class="chat-input-row">
+                        <input type="text" id="chat-input" placeholder="输入你的问题..." autocomplete="off">
+                        <button type="submit" id="btn-send">发送</button>
+                    </div>
+                    <div class="chat-options">
+                        <label><input type="checkbox" id="stream-toggle"> 流式输出</label>
+                        <label>模型 <select id="model-select">
+                            <option value="deepseek-chat">deepseek-chat</option>
+                            <option value="deepseek-reasoner">deepseek-reasoner</option>
+                        </select></label>
                     </div>
                 </form>
             </div>
@@ -62,19 +58,14 @@ registerRoute('#/chat', (container) => {
         render();
 
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        const apiKeyPrefix = user.api_key_prefix || '';
-
-        if (!apiKeyPrefix) {
-            messages.push({ role: 'assistant', content: 'No API key found. Please go to Dashboard to get one.', tokens: 0 });
+        if (!user.api_key_prefix) {
+            messages.push({ role: 'assistant', content: '未找到 API Key，请前往仪表盘获取。', tokens: 0 });
             render();
             return;
         }
 
-        if (stream) {
-            await handleStream(content, model);
-        } else {
-            await handleNormal(content, model);
-        }
+        if (stream) { await handleStream(content, model); }
+        else { await handleNormal(content, model); }
         render();
     }
 
@@ -89,7 +80,7 @@ registerRoute('#/chat', (container) => {
             const tokens = data.usage ? data.usage.total_tokens : 0;
             messages.push({ role: 'assistant', content: reply, tokens });
         } catch (err) {
-            messages.push({ role: 'assistant', content: 'Error: ' + err.message, tokens: 0 });
+            messages.push({ role: 'assistant', content: '错误：' + err.message, tokens: 0 });
         }
     }
 
@@ -97,9 +88,7 @@ registerRoute('#/chat', (container) => {
         streaming = true;
         const streamMsg = document.getElementById('streaming-msg');
         const streamContent = document.getElementById('streaming-content');
-        const indicator = document.getElementById('streaming-indicator');
-        streamMsg.style.display = 'block';
-        indicator.classList.add('active');
+        streamMsg.style.display = 'flex';
         streamContent.textContent = '';
 
         const body = {
@@ -142,14 +131,13 @@ registerRoute('#/chat', (container) => {
                 }
             }
         } catch (err) {
-            fullContent = 'Error: ' + err.message;
+            fullContent = '错误：' + err.message;
             showToast(err.message, 'error');
         }
 
         streaming = false;
-        indicator.classList.remove('active');
         streamMsg.style.display = 'none';
-        messages.push({ role: 'assistant', content: fullContent || '(empty response)', tokens: 0 });
+        messages.push({ role: 'assistant', content: fullContent || '（无响应）', tokens: 0 });
     }
 
     render();

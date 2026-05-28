@@ -3,29 +3,26 @@ registerRoute('#/login', (container) => {
 
     function render() {
         container.innerHTML = `
-            <div style="max-width:420px;margin:3rem auto">
-                <h1 style="text-align:center">DeepSeek Relay</h1>
-                <p style="text-align:center;color:var(--pico-muted-color)">AI API Platform</p>
-                <div role="group" style="margin-bottom:1.5rem">
-                    <button id="tab-login" class="${tab === 'login' ? '' : 'outline'}">Login</button>
-                    <button id="tab-register" class="${tab === 'register' ? '' : 'outline'}">Register</button>
+            <div class="auth-page">
+                <div class="auth-card">
+                    <h1>DeepSeek Relay</h1>
+                    <p class="subtitle">AI API 服务平台</p>
+                    <div class="tabs">
+                        <button id="tab-login" class="${tab === 'login' ? 'active' : ''}">登录</button>
+                        <button id="tab-register" class="${tab === 'register' ? 'active' : ''}">注册</button>
+                    </div>
+                    <form id="auth-form">
+                        ${tab === 'register' ? `
+                        <input type="text" id="username" placeholder="用户名" required autocomplete="username">
+                        ` : ''}
+                        <input type="email" id="email" placeholder="邮箱" required autocomplete="email">
+                        <input type="password" id="password" placeholder="密码" required autocomplete="current-password">
+                        <div id="form-error" class="error"></div>
+                        <button type="submit" class="btn-submit">
+                            ${tab === 'login' ? '登 录' : '注 册'}
+                        </button>
+                    </form>
                 </div>
-                <form id="auth-form">
-                    ${tab === 'register' ? `
-                    <label>Username
-                        <input type="text" id="username" required autocomplete="username">
-                    </label>` : ''}
-                    <label>Email
-                        <input type="email" id="email" required autocomplete="email">
-                    </label>
-                    <label>Password
-                        <input type="password" id="password" required autocomplete="current-password">
-                    </label>
-                    <div id="form-error" style="color:#d63031;margin-bottom:0.5rem;display:none"></div>
-                    <button type="submit" class="contrast" style="width:100%">
-                        ${tab === 'login' ? 'Login' : 'Register'}
-                    </button>
-                </form>
             </div>
         `;
 
