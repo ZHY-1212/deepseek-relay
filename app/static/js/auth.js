@@ -14,8 +14,10 @@ registerRoute('#/login', (container) => {
                     <form id="auth-form">
                         ${tab === 'register' ? `
                         <input type="text" id="username" placeholder="用户名" required autocomplete="username">
-                        ` : ''}
                         <input type="email" id="email" placeholder="邮箱" required autocomplete="email">
+                        ` : `
+                        <input type="text" id="account" placeholder="用户名或邮箱" required autocomplete="username">
+                        `}
                         <input type="password" id="password" placeholder="密码" required autocomplete="current-password">
                         <div id="form-error" class="error"></div>
                         <button type="submit" class="btn-submit">
@@ -35,12 +37,12 @@ registerRoute('#/login', (container) => {
         e.preventDefault();
         const errEl = document.getElementById('form-error');
         errEl.style.display = 'none';
-        const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
 
         try {
             if (tab === 'register') {
                 const username = document.getElementById('username').value;
+                const email = document.getElementById('email').value;
                 const data = await api.post('/auth/register', { username, email, password });
                 api.setToken(data.access_token);
                 localStorage.setItem('user', JSON.stringify(data.user));
@@ -48,7 +50,8 @@ registerRoute('#/login', (container) => {
                     localStorage.setItem('new_api_key', data.api_key);
                 }
             } else {
-                const data = await api.post('/auth/login', { email, password });
+                const account = document.getElementById('account').value;
+                const data = await api.post('/auth/login', { account, password });
                 api.setToken(data.access_token);
                 localStorage.setItem('user', JSON.stringify(data.user));
             }

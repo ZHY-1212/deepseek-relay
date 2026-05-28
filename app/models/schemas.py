@@ -9,7 +9,7 @@ class RegisterRequest(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    email: str
+    account: str  # 用户名或邮箱
     password: str
 
 

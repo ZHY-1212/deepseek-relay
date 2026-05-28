@@ -66,9 +66,12 @@ async def register(req: RegisterRequest):
 async def login(req: LoginRequest):
     from app.main import user_store
 
-    user = user_store.get_by_email(req.email)
+    # 支持用户名或邮箱登录
+    user = user_store.get_by_username(req.account)
     if not user:
-        raise HTTPException(status_code=401, detail="邮箱或密码错误")
+        user = user_store.get_by_email(req.account)
+    if not user:
+        raise HTTPException(status_code=401, detail="用户名或密码错误")
 
     if not bcrypt.checkpw(req.password.encode(), user.hashed_password.encode()):
         raise HTTPException(status_code=401, detail="邮箱或密码错误")
