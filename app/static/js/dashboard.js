@@ -112,9 +112,10 @@ registerRoute('#/dashboard', (container) => {
                 btn.addEventListener('click', async (e) => {
                     e.stopPropagation();
                     try {
-                        await api.post('/dashboard/upgrade', { tier: t });
-                        showToast('已升级至 ' + tierNames[t] + '！', 'success');
-                        await load();
+                        // Create order
+                        const order = await api.post('/payment/create-order', { tier: t });
+                        const tierDef = tierDefs[t];
+                        showPaymentModal(order, tierNames[t], tierDef.price);
                     } catch(er) { showToast(er.message, 'error'); }
                 });
             }
@@ -124,3 +125,44 @@ registerRoute('#/dashboard', (container) => {
     load();
     return { unmount() {} };
 });
+
+// Payment modal - shared across dashboard
+function showPaymentModal(order, tierName, price) {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = `
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>升级至 ${tierName}</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align:center;margin-bottom:1.5rem">
+                    <div style="font-size:2.5rem;font-weight:800;color:var(--blue);letter-spacing:-0.03em">¥${price}</div>
+                    <div style="color:var(--text-secondary);font-size:0.85rem">订单号：${order.order_id.slice(0,8)}...</div>
+                </div>
+                <div style="background:rgba(0,0,0,0.02);border-radius:var(--radius);padding:1rem;margin-bottom:1rem">
+                    <div style="font-weight:600;margin-bottom:0.5rem">付款方式</div>
+                    <p style="font-size:0.85rem;color:var(--text-secondary);margin:0">
+                        请使用支付宝或微信扫描下方二维码付款，<br>付款后在备注中填写订单号。
+                    </p>
+                </div>
+                <div style="text-align:center;padding:1rem;background:#fff;border-radius:var(--radius);border:1px solid rgba(0,0,0,0.06)">
+                    <div style="font-size:6rem;margin-bottom:0.5rem">💳</div>
+                    <p style="font-size:0.85rem;color:var(--text-secondary)">
+                        请联系管理员获取收款码<br>
+                        或等待管理员手动确认升级
+                    </p>
+                </div>
+                <p style="font-size:0.8rem;color:var(--text-secondary);text-align:center;margin-top:1rem">
+                    付款后请联系管理员确认，或等待自动确认
+                </p>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    overlay.querySelector('.modal-close').addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+}
+

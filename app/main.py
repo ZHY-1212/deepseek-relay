@@ -13,6 +13,7 @@ from app.store.json_store import JsonStore
 from app.store.user_store import UserStore
 from app.store.usage_store import UsageStore
 from app.store.tier_store import TierStore
+from app.store.order_store import OrderStore
 
 logging.basicConfig(
     level=logging.INFO,
@@ -23,16 +24,18 @@ logger = logging.getLogger("deepseek-relay")
 user_store: UserStore
 usage_store: UsageStore
 tier_store: TierStore
+order_store: OrderStore
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global user_store, usage_store, tier_store
+    global user_store, usage_store, tier_store, order_store
     data = Path(settings.data_dir)
     data.mkdir(parents=True, exist_ok=True)
     user_store = UserStore(JsonStore(str(data / "users.json")))
     usage_store = UsageStore(JsonStore(str(data / "usage.json")))
     tier_store = TierStore(JsonStore(str(data / "tiers.json")))
+    order_store = OrderStore(JsonStore(str(data / "orders.json")))
     logger.info("DeepSeek Relay started")
     yield
     # Graceful shutdown
@@ -83,11 +86,13 @@ from app.routers.auth_router import router as auth_router
 from app.routers.proxy_router import router as proxy_router
 from app.routers.dashboard_router import router as dashboard_router
 from app.routers.admin_router import router as admin_router
+from app.routers.payment_router import router as payment_router
 
 app.include_router(auth_router)
 app.include_router(proxy_router)
 app.include_router(dashboard_router)
 app.include_router(admin_router)
+app.include_router(payment_router)
 
 
 @app.get("/health")
