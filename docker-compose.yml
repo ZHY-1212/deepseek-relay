@@ -33,6 +33,7 @@ services:
 
   certbot:
     image: certbot/certbot
+    profiles: ["ssl"]
     volumes:
       - certbot_www:/var/www/certbot
       - certbot_certs:/etc/letsencrypt
