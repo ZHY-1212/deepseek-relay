@@ -21,9 +21,9 @@ registerRoute('#/dashboard', (container) => {
         const u = profile.user;
         const usage = profile.usage;
         const tierDefs = {
-            free: { tokens: 100000, reqs: 100, price: 0 },
-            pro: { tokens: 1000000, reqs: 1000, price: 29 },
-            vip: { tokens: 10000000, reqs: '无限制', price: 99 },
+            free: { tokens: 100000, reqs: 50, price: 0 },
+            pro: { tokens: 2000000, reqs: 500, price: 19.9 },
+            vip: { tokens: 10000000, reqs: '无限制', price: 49.9 },
         };
 
         const currentTier = tierDefs[u.tier];
@@ -74,7 +74,7 @@ registerRoute('#/dashboard', (container) => {
                     return `
                     <div class="tier-card ${active}" id="tier-${t}">
                         <h3>${tierNames[t]}</h3>
-                        <div class="price">${d.price === 0 ? '免费' : '¥' + (d.price * 7.2).toFixed(0) + '/月'}</div>
+                        <div class="price">${d.price === 0 ? '免费' : '¥' + d.price + '/月'}</div>
                         <p>${d.tokens.toLocaleString()} Token/月</p>
                         <p>${typeof d.reqs === 'number' ? d.reqs.toLocaleString() : d.reqs} 请求/天</p>
                         <button ${isCurrent ? 'disabled' : ''}>${isCurrent ? '当前套餐' : '立即升级'}</button>

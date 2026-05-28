@@ -4,20 +4,20 @@ TIER_DEFAULTS = {
     "free": {
         "name": "Free",
         "tokens_per_month": 100_000,
-        "requests_per_day": 100,
+        "requests_per_day": 50,
         "price": 0,
     },
     "pro": {
         "name": "Pro",
-        "tokens_per_month": 1_000_000,
-        "requests_per_day": 1_000,
-        "price": 29,
+        "tokens_per_month": 2_000_000,
+        "requests_per_day": 500,
+        "price": 19.9,
     },
     "vip": {
         "name": "VIP",
         "tokens_per_month": 10_000_000,
         "requests_per_day": None,
-        "price": 99,
+        "price": 49.9,
     },
 }
 

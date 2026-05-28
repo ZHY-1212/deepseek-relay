@@ -106,7 +106,7 @@ registerRoute('#/admin', (container) => {
                         <div class="label">${tierNames[key]} (${key})</div>
                         <div class="value" style="font-size:1.4rem">${t.tokens_per_month.toLocaleString()} <span style="font-size:0.85rem;color:var(--text-muted);font-weight:400">Token/月</span></div>
                         <div style="color:var(--text-muted);font-size:0.85rem">
-                            ${t.requests_per_day ? t.requests_per_day.toLocaleString() + ' 请求/天' : '请求无限制'} &middot; ¥${(t.price * 7.2).toFixed(0)}/月
+                            ${t.requests_per_day ? t.requests_per_day.toLocaleString() + ' 请求/天' : '请求无限制'} &middot; ¥${t.price}/月
                         </div>
                     </div>
                     `).join('')}
