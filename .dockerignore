@@ -1,0 +1,17 @@
+__pycache__
+*.pyc
+.venv
+env
+.git
+*.log
+data/
+.env
+.env.example
+nginx.conf
+docker-compose.yml
+init-ssl.sh
+test_api.py
+test_body.json
+test_import.py
+server.log
+README.md

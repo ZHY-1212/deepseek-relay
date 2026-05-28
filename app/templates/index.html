@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepSeek Relay - AI API Platform</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+    <header class="container-fluid" id="top-nav" style="display:none">
+        <nav>
+            <ul>
+                <li><strong>DS Relay</strong></li>
+            </ul>
+            <ul>
+                <li><a href="#/dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="#/chat" class="nav-link">Chat</a></li>
+                <li><a href="#/admin" class="nav-link admin-only" style="display:none">Admin</a></li>
+                <li><button class="outline secondary" id="btn-logout">Logout</button></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container" id="app">
+        <div class="loading">Loading...</div>
+    </main>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/router.js"></script>
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+    <script src="/static/js/chat.js"></script>
+    <script src="/static/js/admin.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
