@@ -9,7 +9,8 @@ class RegisterRequest(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    account: str  # 用户名或邮箱
+    account: str = ""  # 用户名或邮箱
+    email: str = ""    # 兼容旧版客户端
     password: str
 
 

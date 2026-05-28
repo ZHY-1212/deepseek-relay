@@ -66,10 +66,11 @@ async def register(req: RegisterRequest):
 async def login(req: LoginRequest):
     from app.main import user_store
 
-    # 支持用户名或邮箱登录
-    user = user_store.get_by_username(req.account)
+    # 支持用户名或邮箱登录，兼容旧版 email 字段
+    login_id = req.account or req.email
+    user = user_store.get_by_username(login_id)
     if not user:
-        user = user_store.get_by_email(req.account)
+        user = user_store.get_by_email(login_id)
     if not user:
         raise HTTPException(status_code=401, detail="用户名或密码错误")
 
