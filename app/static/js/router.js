@@ -10,39 +10,32 @@ function navigate() {
     const token = api.getToken();
     const isPublic = hash === '#/login';
 
-    if (!token && !isPublic) {
-        window.location.hash = '#/login';
-        return;
-    }
-    if (token && isPublic) {
-        window.location.hash = '#/dashboard';
-        return;
-    }
+    if (!token && !isPublic) { window.location.hash = '#/login'; return; }
+    if (token && isPublic) { window.location.hash = '#/dashboard'; return; }
 
-    // Nav visibility
-    const nav = document.getElementById('top-nav');
-    const adminLinks = document.querySelectorAll('.admin-only');
+    const layout = document.getElementById('app-layout');
+    const app = document.getElementById('app');
+
     if (token && !isPublic) {
-        nav.style.display = 'block';
+        layout.style.display = 'flex';
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        adminLinks.forEach(el => el.style.display = user.is_admin ? 'inline' : 'none');
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = user.is_admin ? '' : 'none');
     } else {
-        nav.style.display = 'none';
+        layout.style.display = 'none';
     }
 
-    // Highlight active nav link
-    document.querySelectorAll('.nav-links a').forEach(link => {
+    // Highlight nav
+    document.querySelectorAll('.sidebar-nav a').forEach(link => {
         link.classList.toggle('active', link.getAttribute('href') === hash);
     });
 
     const renderFn = routes[hash];
-    const app = document.getElementById('app');
     if (renderFn) {
         if (currentPage && currentPage.unmount) currentPage.unmount();
         app.innerHTML = '';
         currentPage = renderFn(app);
     } else {
-        app.innerHTML = '<h2 style="text-align:center;padding:4rem;color:var(--text-secondary)">页面不存在</h2>';
+        app.innerHTML = '<h2 style="text-align:center;padding:80px;color:var(--text-secondary)">页面不存在</h2>';
     }
 }
 
