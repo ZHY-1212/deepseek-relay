@@ -602,8 +602,15 @@ registerRoute('#/recharge', function(container) {
             '<div class="stat-card"><div class="stat-label">可调用 API</div><div class="stat-value" style="font-size:18px">≈ '+(tokens/30000).toFixed(0)+'<span style="font-size:14px;font-weight:500;color:var(--text-secondary)"> 万</span></div><span style="font-size:12px;color:var(--text-tertiary)">DeepSeek Chat API Token（3x）</span></div>'+
             '</div>'+
 
+            // Instant ¥5 button
+            '<div class="section-title">快速充值 <span style="font-size:12px;color:var(--text-tertiary);font-weight:400">（即时到账 · 无需确认）</span></div>'+
+            '<div class="stats-grid"><div class="stat-card" style="text-align:center;cursor:pointer;border:2px solid var(--green);background:rgba(34,197,94,.03)" id="btn-quick">'+
+            '<div style="font-size:22px;font-weight:700;color:var(--green);margin-bottom:4px">⚡ ¥5 即时到账</div>'+
+            '<div style="font-size:13px;color:var(--text-secondary)">500 万 Token · 每人每天 3 次</div>'+
+            '<div style="font-size:12px;color:var(--text-tertiary);margin-top:4px" id="quick-remaining">点击充值</div></div></div>'+
+
             // Quick top-up buttons
-            '<div class="section-title">快速充值</div>'+
+            '<div class="section-title">扫码充值 <span style="font-size:12px;color:var(--text-tertiary);font-weight:400">（大额 · 需管理员确认）</span></div>'+
             '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px">'+
             packages.map(function(p){
                 var badge = p.badge ? '<span style="position:absolute;top:8px;right:8px;background:var(--accent);color:#fff;font-size:10px;padding:1px 6px;border-radius:8px">'+p.badge+'</span>' : '';
@@ -623,6 +630,24 @@ registerRoute('#/recharge', function(container) {
             '</tbody></table></div>'+
 
             '<div style="text-align:center;margin-top:16px;font-size:12px;color:var(--text-tertiary)">余额永久有效 · 充值即时到账 · 按实际调用扣费</div>';
+
+        // Quick ¥5 topup
+        document.getElementById('btn-quick').addEventListener('click', async function(){
+            var msg = document.getElementById('topup-msg');
+            msg.className = 'inline-msg';
+            msg.textContent = '充值中...';
+            msg.style.display = 'block';
+            try {
+                var result = await api.post('/payment/quick-topup');
+                msg.className = 'inline-msg success';
+                msg.textContent = '充值成功！已到账 ¥5（500 万 Token）· 今日剩余 '+result.remaining_today+' 次';
+                showToast('¥5 已到账！','success');
+                refreshBalance();
+            } catch(e) {
+                msg.className = 'inline-msg error';
+                msg.textContent = e.message;
+            }
+        });
 
         // Bind top-up buttons
         packages.forEach(function(p){

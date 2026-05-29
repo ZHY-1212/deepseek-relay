@@ -14,6 +14,38 @@ class TopupRequest(BaseModel):
     amount: float
 
 
+@router.post("/quick-topup")
+async def quick_topup(request: Request):
+    """Instant small top-up, max ¥5 per time, 3 times/day. No admin needed."""
+    from app.main import user_store, usage_store
+    user = get_current_user(request)
+
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    daily_key = f"quick_topup_{user.id}_{today}"
+    count = usage_store.count_requests_today(daily_key)
+    if count >= 3:
+        raise HTTPException(status_code=429, detail="今日快速充值次数已用完（3次/天），请使用扫码充值")
+
+    amount = 5.0
+    tokens = int(amount * 1000000)
+    user.balance_tokens += tokens
+    user.updated_at = datetime.now(timezone.utc).isoformat()
+    user_store.update(user)
+
+    # Track this topup as a usage record to count daily limit
+    from app.models.usage import UsageRecord
+    usage_store.add(UsageRecord(
+        id=str(uuid4()),
+        user_id=daily_key,
+        timestamp=datetime.now(timezone.utc).isoformat(),
+        tokens_consumed=1,
+        model="topup",
+        success=True,
+    ))
+
+    return {"message": "充值成功", "amount": amount, "tokens_added": tokens, "new_balance": user.balance_tokens, "remaining_today": 3 - count - 1}
+
+
 @router.post("/topup")
 async def create_topup(request: Request, body: TopupRequest):
     """Create a top-up order. Shows QR code for manual payment."""
