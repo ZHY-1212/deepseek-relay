@@ -8,6 +8,18 @@ function navigate() {
     var token = api.getToken();
     var isPublic = hash === '#/login';
 
+    // Detect session mismatch (another tab logged in as different user)
+    if (token) {
+        var storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            try {
+                var u = JSON.parse(storedUser);
+                // Token should be for the stored user — if not, force logout
+                if (!u.id) { api.clearToken(); window.location.hash = '#/login'; return; }
+            } catch(e) { api.clearToken(); window.location.hash = '#/login'; return; }
+        }
+    }
+
     if (!token && !isPublic) { window.location.hash = '#/login'; return; }
     if (token && isPublic) { window.location.hash = '#/models'; return; }
 
