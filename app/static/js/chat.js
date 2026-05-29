@@ -161,8 +161,14 @@ registerRoute('#/chat', function(container) {
 
     function buildMsgs(image) {
         var h=messages.filter(function(m){return m.tokens!==undefined});
+        var hasImage=false;
         return h.map(function(m){
-            if(m.role==='user'&&m.image){ var p=[{type:'text',text:m.content}]; p.unshift({type:'image_url',image_url:{url:m.image}}); return {role:'user',content:p}; }
+            if(m.role==='user'&&m.image && !hasImage){
+                hasImage=true;
+                var p=[{type:'text',text:m.content}];
+                p.unshift({type:'image_url',image_url:{url:m.image}});
+                return {role:'user',content:p};
+            }
             return {role:m.role,content:m.content};
         });
     }
