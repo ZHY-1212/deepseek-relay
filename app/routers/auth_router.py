@@ -14,7 +14,10 @@ router = APIRouter(prefix="/auth", tags=["认证"])
 @router.post("/register")
 async def register(req: RegisterRequest):
     from app.main import user_store, tier_store
+    import re
 
+    if not re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', req.email):
+        raise HTTPException(status_code=400, detail="邮箱格式不正确")
     if len(req.password) < 8:
         raise HTTPException(status_code=400, detail="密码至少 8 位")
     if not any(c.isalpha() for c in req.password) or not any(c.isdigit() for c in req.password):
