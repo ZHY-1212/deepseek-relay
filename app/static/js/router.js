@@ -28,7 +28,14 @@ function navigate() {
 
     if (currentPage && currentPage.unmount) { try { currentPage.unmount(); } catch(e) {} }
 
+    // Support parameterized routes like #/pay/10
     var renderFn = routes[hash];
+    if (!renderFn) {
+        // Try prefix match
+        Object.keys(routes).forEach(function(key) {
+            if (hash.indexOf(key) === 0 && key !== '#/login') renderFn = routes[key];
+        });
+    }
     app.innerHTML = '';
     app.removeAttribute('style');
 
