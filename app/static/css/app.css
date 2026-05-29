@@ -286,8 +286,53 @@ body {
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 /* Streaming */
-#streaming-indicator { display: inline-block; width: 4px; height: 4px; background: var(--text-secondary); border-radius: 50%; margin-left: 4px; vertical-align: middle; animation: blink 1.2s infinite; }
+#streaming-indicator { display: inline-block; width: 5px; height: 5px; background: var(--accent); border-radius: 50%; margin-left: 6px; vertical-align: middle; animation: blink 1s infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+/* Thinking block */
+.model-icon { font-size: 13px; margin-right: 2px; }
+.thinking-block {
+    background: var(--bg-hover);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 8px;
+    overflow: hidden;
+    font-size: 13px;
+}
+.thinking-header {
+    padding: 8px 14px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 550;
+    color: var(--text-secondary);
+    transition: all .12s var(--ease);
+    user-select: none;
+}
+.thinking-header:hover { color: var(--text); }
+.thinking-header.collapsed { color: var(--text-tertiary); }
+.thinking-header.collapsed::after { content: '▸'; font-size: 10px; }
+.thinking-header:not(.collapsed)::after { content: '▾'; font-size: 10px; }
+.thinking-dots span {
+    animation: dotPulse 1.4s infinite;
+    font-weight: 700;
+    color: var(--accent);
+}
+.thinking-dots span:nth-child(2) { animation-delay: .2s; }
+.thinking-dots span:nth-child(3) { animation-delay: .4s; }
+@keyframes dotPulse { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+.thinking-content {
+    padding: 8px 14px 14px;
+    color: var(--text-secondary);
+    font-size: 12.5px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    border-top: 1px solid var(--border-light);
+    max-height: 260px;
+    overflow-y: auto;
+}
+.thinking-block.done { border-left: 3px solid var(--accent); }
 
 /* Headings & text */
 .section-title { font-size: 16px; font-weight: 600; letter-spacing: -.015em; margin: 32px 0 14px; display: flex; align-items: center; gap: 8px; }
