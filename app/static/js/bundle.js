@@ -1151,6 +1151,24 @@ function showToast(message, type) {
     setTimeout(function() { toast.style.opacity = '0'; toast.style.transition = 'opacity .2s'; setTimeout(function() { toast.remove(); }, 200); }, 3500);
 }
 
+// Poll pending orders badge (admin only)
+setInterval(async function() {
+    var badge = document.getElementById('admin-badge');
+    if (!badge || badge.style.display === 'none') return;
+    try {
+        var user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!user.is_admin) return;
+        var orders = await api.get('/payment/orders');
+        var pending = orders.filter(function(o) { return o.status === 'pending'; }).length;
+        if (pending > 0) {
+            badge.textContent = pending;
+            badge.style.display = 'inline';
+        } else {
+            badge.style.display = 'none';
+        }
+    } catch(e) {}
+}, 30000); // every 30 seconds
+
 // Enter key for chat
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
