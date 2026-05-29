@@ -23,8 +23,6 @@ async def register(req: RegisterRequest):
         raise HTTPException(status_code=400, detail="密码至少 8 位")
     if not any(c.isalpha() for c in req.password) or not any(c.isdigit() for c in req.password):
         raise HTTPException(status_code=400, detail="密码需包含字母和数字")
-    if user_store.get_by_email(email):
-        raise HTTPException(status_code=400, detail="该邮箱已注册")
     if user_store.get_by_username(req.username):
         raise HTTPException(status_code=400, detail="该用户名已被使用")
 
