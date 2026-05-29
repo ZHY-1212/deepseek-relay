@@ -29,8 +29,15 @@
         </div>
     </header>
 
-    <main id="app"></main>
+    <main id="app">
+        <div style="display:flex;align-items:center;justify-content:center;min-height:80vh">
+            <div style="text-align:center">
+                <div style="width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px"></div>
+                <div style="font-size:14px;color:var(--text-secondary)">DS Relay 加载中...</div>
+            </div>
+        </div>
+    </main>
 
-    <script src="/static/js/bundle.js?v=9"></script>
+    <script defer src="/static/js/bundle.js?v=9"></script>
 </body>
 </html>
