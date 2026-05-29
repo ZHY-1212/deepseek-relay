@@ -83,3 +83,58 @@ async def platform_stats(request: Request):
     stats = usage_store.get_platform_stats()
     stats["total_users"] = user_store.count()
     return stats
+
+
+@router.get("/all-users")
+async def all_users_dashboard(request: Request):
+    from app.main import usage_store, user_store, tier_store
+
+    get_current_user(request)
+    users = user_store.list_all()
+    all_usage = usage_store._all()
+
+    total_balance = sum(u.balance_tokens for u in users)
+    total_deducted = sum(r.get("tokens_deducted", 0) for r in all_usage if r.get("success"))
+    total_api_tokens = sum(r.get("tokens_consumed", 0) for r in all_usage if r.get("success"))
+    total_requests = sum(1 for r in all_usage if r.get("success"))
+    failed_requests = sum(1 for r in all_usage if not r.get("success"))
+
+    # Per-user stats
+    user_stats = []
+    for u in users:
+        user_records = [r for r in all_usage if r.get("user_id") == u.id and r.get("success")]
+        user_deducted = sum(r.get("tokens_deducted", 0) for r in user_records)
+        user_api_tokens = sum(r.get("tokens_consumed", 0) for r in user_records)
+        user_reqs = len(user_records)
+        user_stats.append({
+            "id": u.id,
+            "username": u.username,
+            "email": u.email,
+            "tier": u.tier.value,
+            "balance": u.balance_tokens,
+            "total_deducted": user_deducted,
+            "total_api_tokens": user_api_tokens,
+            "total_requests": user_reqs,
+            "created_at": u.created_at,
+        })
+
+    # Sort by consumption
+    user_stats.sort(key=lambda x: x["total_deducted"], reverse=True)
+
+    # Conversion: 1 platform token = ¥0.0001 (¥10 per 100K tokens)
+    revenue = round(total_deducted * 0.0001, 2)
+
+    return {
+        "overview": {
+            "total_users": len(users),
+            "total_balance": total_balance,
+            "total_deducted": total_deducted,
+            "total_api_tokens": total_api_tokens,
+            "total_requests": total_requests,
+            "failed_requests": failed_requests,
+            "estimated_revenue": revenue,
+            "avg_tokens_per_user": total_deducted // max(1, len(users)),
+        },
+        "users": user_stats,
+        "tiers": tier_store.list_all(),
+    }

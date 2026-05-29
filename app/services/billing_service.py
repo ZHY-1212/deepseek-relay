@@ -78,6 +78,7 @@ class BillingService:
             user_id=user.id,
             timestamp=datetime.now(timezone.utc).isoformat(),
             tokens_consumed=tokens,
+            tokens_deducted=cost,
             tokens_in=tokens_in,
             tokens_out=tokens_out,
             model=model,
