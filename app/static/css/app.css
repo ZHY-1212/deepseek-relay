@@ -205,7 +205,16 @@ body {
 @keyframes msgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .chat-msg.user { align-items: flex-end; }
 .chat-msg.assistant { align-items: flex-start; }
-.chat-msg .role { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; padding: 0 4px; text-transform: uppercase; letter-spacing: .04em; }
+.chat-msg .role { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; padding: 0 4px; letter-spacing: .04em; display: flex; align-items: center; gap: 4px; }
+.msg-time { font-weight: 400; font-size: 10px; color: var(--text-tertiary); margin-left: 4px; }
+.msg-actions { display: flex; gap: 2px; padding: 0 4px; margin-bottom: 4px; opacity: 0; transition: opacity .15s var(--ease); }
+.chat-msg.assistant:hover .msg-actions { opacity: 1; }
+.msg-actions button {
+    background: var(--bg-hover); border: 1px solid var(--border); border-radius: 6px;
+    cursor: pointer; font-size: 13px; padding: 2px 8px; transition: all .12s var(--ease);
+    color: var(--text-secondary);
+}
+.msg-actions button:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); }
 .chat-msg .bubble { max-width: 74%; padding: 12px 16px; border-radius: 16px; line-height: 1.6; font-size: 14.5px; word-break: break-word; }
 .chat-msg.user .bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 5px; }
 .chat-msg.assistant .bubble { background: var(--bg-card); border: 1px solid var(--border); border-bottom-left-radius: 5px; white-space: pre-wrap; }
