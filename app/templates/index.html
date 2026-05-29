@@ -3,36 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DS Relay — DeepSeek API 聚合平台</title>
+    <title>DS Relay — 多模型 AI API 平台</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%234f46e5'/><path d='M16 6C11 6 7 10 6 14 5 16 5 19 7 21 9 23 12 23 15 22 18 21 21 19 23 16 25 13 24 10 22 8 20 6 17 6 16 6Z' fill='%23fff' opacity='.3'/><circle cx='12' cy='13' r='2' fill='%23fff'/><path d='M17 12c1.5-1.5 5-3 7-3' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/></svg>">
-    <link rel="stylesheet" href="/static/css/app.css?v=5">
+    <link rel="stylesheet" href="/static/css/app.css?v=6">
 </head>
 <body>
-    <div id="app-layout" style="display:none">
-        <aside id="sidebar">
-            <div class="sidebar-inner">
-                <div class="sidebar-top">
-                    <a href="#/dashboard" class="logo"><span class="logo-dot"></span>DS Relay</a>
-                    <nav class="sidebar-nav">
-                        <a href="#/dashboard" class="nav-link"><span class="nav-icon">◫</span> 仪表盘</a>
-                        <a href="#/chat" class="nav-link"><span class="nav-icon">✦</span> AI 对话</a>
-                        <a href="#/history" class="nav-link"><span class="nav-icon">☰</span> 调用记录</a>
-                        <a href="#/docs" class="nav-link"><span class="nav-icon">⌸</span> API 文档</a>
-                        <a href="#/profile" class="nav-link"><span class="nav-icon">⚙</span> 个人设置</a>
-                        <a href="#/admin" class="nav-link admin-only" style="display:none"><span class="nav-icon">◈</span> 管理后台</a>
-                    </nav>
-                </div>
-                <div class="sidebar-bottom">
-                    <button class="theme-btn" id="btn-theme"><span>◐</span> 切换主题</button>
-                    <button class="btn-logout" id="btn-logout">退出登录</button>
-                </div>
+    <header id="topnav" style="display:none">
+        <div class="nav-inner">
+            <a href="#/models" class="logo"><span class="logo-dot"></span>DS Relay</a>
+            <nav class="nav-links">
+                <a href="#/models" class="nav-link">模型广场</a>
+                <a href="#/chat" class="nav-link">体验中心</a>
+                <a href="#/dashboard" class="nav-link">控制台</a>
+                <a href="#/docs" class="nav-link">API 文档</a>
+                <a href="#/admin" class="nav-link admin-only" style="display:none">管理后台</a>
+            </nav>
+            <div class="nav-actions">
+                <button id="btn-theme" title="切换主题">◐</button>
+                <a href="#/profile" class="nav-link" style="text-decoration:none;font-size:13px;color:var(--text-secondary);padding:5px 12px">设置</a>
+                <button class="btn-logout" id="btn-logout">退出</button>
             </div>
-        </aside>
-        <main id="app-main"></main>
+        </div>
+    </header>
+
+    <div id="app-layout">
+        <main id="app"></main>
     </div>
 
-    <main id="app"></main>
-
-    <script src="/static/js/bundle.js?v=5"></script>
+    <script src="/static/js/bundle.js?v=7"></script>
 </body>
 </html>
