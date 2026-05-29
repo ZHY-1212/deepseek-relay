@@ -414,7 +414,8 @@ registerRoute('#/chat', function(container) {
     var pendingImage = null;
     var showHistory = false;
     var selectedModel = localStorage.getItem('chat_model') || 'deepseek-chat';
-    var STORAGE_KEY = 'chat_messages';
+    var userId = (JSON.parse(localStorage.getItem('user') || '{}')).id || 'anon';
+    var STORAGE_KEY = 'chat_' + userId;
     var H24 = 24 * 60 * 60 * 1000;
 
     function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(messages)); } catch(e) {} }
