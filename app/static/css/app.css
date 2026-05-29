@@ -60,7 +60,6 @@ html{scroll-behavior:smooth}
 
 /* ═══ Main ═══ */
 #app { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; min-height: calc(100vh - 52px); }
-#app-layout { display: block; }
 
 /* Auth */
 .auth-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg); padding: 24px; }

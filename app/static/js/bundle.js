@@ -53,17 +53,14 @@ function navigate() {
     if (token && isPublic) { window.location.hash = '#/models'; return; }
 
     var topnav = document.getElementById('topnav');
-    var layout = document.getElementById('app-layout');
     var app = document.getElementById('app');
 
     if (token && !isPublic) {
         topnav.style.display = 'flex';
-        layout.style.display = 'block';
         var user = JSON.parse(localStorage.getItem('user') || '{}');
         document.querySelectorAll('.admin-only').forEach(function(el) { el.style.display = user.is_admin ? '' : 'none'; });
     } else {
         topnav.style.display = 'none';
-        layout.style.display = 'none';
     }
 
     document.querySelectorAll('.nav-links a').forEach(function(link) {
@@ -74,14 +71,14 @@ function navigate() {
 
     var renderFn = routes[hash];
     app.innerHTML = '';
+    app.removeAttribute('style');
 
     if (renderFn) {
         try { currentPage = renderFn(app); } catch(e) {
             app.innerHTML = '<p style="color:var(--red);padding:40px">加载出错：' + e.message + '</p>';
-            console.error(e);
         }
     } else {
-        app.innerHTML = '<h2 style="text-align:center;padding:80px;color:var(--text-secondary)">页面不存在</h2>';
+        app.innerHTML = '<h2 style="text-align:center;padding:80px;color:var(--text-secondary)">404</h2>';
     }
 }
 
