@@ -40,11 +40,19 @@ registerRoute('#/admin', function(container) {
             '</div>'+
             '<div id="admin-content"></div>';
 
-        document.getElementById('tab-overview').addEventListener('click',function(){currentTab='overview';renderContent()});
-        document.getElementById('tab-users').addEventListener('click',function(){currentTab='users';renderContent()});
-        document.getElementById('tab-orders').addEventListener('click',function(){currentTab='orders';renderContent()});
-        document.getElementById('tab-tiers').addEventListener('click',function(){currentTab='tiers';renderContent()});
-        document.getElementById('tab-qr').addEventListener('click',function(){currentTab='qr';renderContent()});
+        function switchTab(name) {
+            currentTab = name;
+            ['overview','users','orders','tiers','qr'].forEach(function(t){
+                var btn = document.getElementById('tab-'+t);
+                if (btn) { btn.className = t === name ? 'active' : ''; }
+            });
+            renderContent();
+        }
+        document.getElementById('tab-overview').addEventListener('click',function(){switchTab('overview')});
+        document.getElementById('tab-users').addEventListener('click',function(){switchTab('users')});
+        document.getElementById('tab-orders').addEventListener('click',function(){switchTab('orders')});
+        document.getElementById('tab-tiers').addEventListener('click',function(){switchTab('tiers')});
+        document.getElementById('tab-qr').addEventListener('click',function(){switchTab('qr')});
         renderContent();
     }
 
