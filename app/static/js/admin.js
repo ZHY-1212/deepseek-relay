@@ -36,6 +36,7 @@ registerRoute('#/admin', function(container) {
             '<button id="tab-users" class="'+(currentTab==='users'?'active':'')+'">用户列表</button>'+
             '<button id="tab-orders" class="'+(currentTab==='orders'?'active':'')+'">订单管理 '+(pendingOrders?'<span style="background:var(--red);color:#fff;border-radius:10px;padding:0 6px;font-size:11px;margin-left:4px">'+pendingOrders+'</span>':'')+'</button>'+
             '<button id="tab-tiers" class="'+(currentTab==='tiers'?'active':'')+'">套餐配置</button>'+
+            '<button id="tab-qr" class="'+(currentTab==='qr'?'active':'')+'">收款设置</button>'+
             '</div>'+
             '<div id="admin-content"></div>';
 
@@ -43,6 +44,7 @@ registerRoute('#/admin', function(container) {
         document.getElementById('tab-users').addEventListener('click',function(){currentTab='users';renderContent()});
         document.getElementById('tab-orders').addEventListener('click',function(){currentTab='orders';renderContent()});
         document.getElementById('tab-tiers').addEventListener('click',function(){currentTab='tiers';renderContent()});
+        document.getElementById('tab-qr').addEventListener('click',function(){currentTab='qr';renderContent()});
         renderContent();
     }
 
@@ -95,6 +97,29 @@ registerRoute('#/admin', function(container) {
                     try { await api.put('/payment/orders/'+btn.dataset.id+'/cancel'); showToast('已取消','success'); await load(); }
                     catch(e){ showToast(e.message,'error'); }
                 });
+            });
+        } else if (currentTab === 'qr') {
+            area.innerHTML = '<div class="section-title">上传收款码</div>'+
+                '<div class="card"><p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px">上传你的个人微信或支付宝收款码，用户在充值页面扫码付款。支持 JPG/PNG 图片。</p>'+
+                '<input type="file" id="qr-file-input" accept="image/*" style="display:none">'+
+                '<button class="btn-outline" id="btn-upload-qr">选择收款码图片</button>'+
+                '<div id="qr-preview" style="margin-top:12px"></div>'+
+                '<span id="qr-msg" class="inline-msg"></span></div>';
+
+            document.getElementById('btn-upload-qr').addEventListener('click',function(){ document.getElementById('qr-file-input').click(); });
+            document.getElementById('qr-file-input').addEventListener('change', function(e){
+                var file = e.target.files[0]; if (!file) return;
+                if (file.size > 500*1024) { showToast('图片不能超过 500KB','error'); return; }
+                var reader = new FileReader();
+                reader.onload = async function(){
+                    document.getElementById('qr-preview').innerHTML = '<img src="'+reader.result+'" style="max-width:220px;border-radius:8px;border:1px solid var(--border)"><p style="font-size:12px;color:var(--green);margin-top:8px">上传中...</p>';
+                    try {
+                        await api.post('/admin/payment-qr', {qr_image: reader.result});
+                        document.getElementById('qr-preview').innerHTML = '<img src="'+reader.result+'" style="max-width:220px;border-radius:8px;border:1px solid var(--border)"><p style="font-size:12px;color:var(--green);margin-top:8px">收款码已保存</p>';
+                        showToast('收款码已更新','success');
+                    } catch(er) { showToast(er.message,'error'); }
+                };
+                reader.readAsDataURL(file);
             });
         } else if (currentTab === 'tiers') {
             var tiers = data.tiers || {};

@@ -85,6 +85,23 @@ async def platform_stats(request: Request):
     return stats
 
 
+@router.post("/payment-qr")
+async def set_payment_qr(request: Request):
+    """Admin uploads their personal payment QR code (base64 image)."""
+    from app.main import tier_store
+    body = await request.json()
+    qr_data = body.get("qr_image", "")
+    tier_store.update("payment", {"qr_image": qr_data})
+    return {"message": "收款码已更新"}
+
+
+@router.get("/payment-qr")
+async def get_payment_qr():
+    from app.main import tier_store
+    data = tier_store.get("payment") or {}
+    return {"qr_image": data.get("qr_image", "")}
+
+
 @router.get("/all-users")
 async def all_users_dashboard(request: Request):
     from app.main import usage_store, user_store, tier_store

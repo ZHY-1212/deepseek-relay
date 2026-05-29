@@ -16,7 +16,7 @@ class TopupRequest(BaseModel):
 
 @router.post("/topup")
 async def create_topup(request: Request, body: TopupRequest):
-    """Create a top-up order. Returns PayJS QR code if configured, else self-service."""
+    """Create a top-up order. Shows QR code for manual payment."""
     from app.main import user_store, order_store
     from app.services.payment_gateway import gateway
 
@@ -36,36 +36,13 @@ async def create_topup(request: Request, body: TopupRequest):
     )
     order_store.add(order)
 
-    # Try PayJS QR code
+    # Try PayJS
     qr = await gateway.create_qrcode(body.amount, order_id, f"DS Relay 充值 ¥{body.amount}")
     if qr:
-        return {
-            "order_id": order_id,
-            "amount": body.amount,
-            "qrcode": qr["qrcode"],
-            "code_url": qr["code_url"],
-            "payjs_order_id": qr["payjs_order_id"],
-            "method": "wechat_qr",
-        }
+        return {"order_id": order_id, "amount": body.amount, "qrcode": qr["qrcode"], "method": "wechat_qr"}
 
-    # Fallback: self-service (development mode)
-    tokens = int(body.amount * 1000000)
-    user.balance_tokens += tokens
-    user.updated_at = datetime.now(timezone.utc).isoformat()
-    user_store.update(user)
-
-    order.status = "paid"
-    order.paid_at = datetime.now(timezone.utc).isoformat()
-    order_store.update(order)
-
-    return {
-        "order_id": order_id,
-        "amount": body.amount,
-        "tokens_added": tokens,
-        "new_balance": user.balance_tokens,
-        "method": "self_service",
-        "message": "充值成功（自助模式）",
-    }
+    # No PayJS — show manual payment instructions
+    return {"order_id": order_id, "amount": body.amount, "method": "manual", "message": "请扫码支付后等待管理员确认"}
 
 
 @router.post("/notify")
