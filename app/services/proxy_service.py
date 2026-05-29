@@ -44,12 +44,22 @@ class ProxyService:
         client = self._get_client(base_url)
         response = await client.post(url, json=body, headers=headers)
         if response.status_code != 200:
+            # Try to extract a readable error message
             detail = response.text
             try:
-                detail = response.json()
+                err_json = response.json()
+                # Different providers have different error formats
+                if isinstance(err_json, dict):
+                    detail = err_json.get("error", {}).get("message", "")
+                    if not detail:
+                        detail = err_json.get("message", "")
+                    if not detail:
+                        detail = str(err_json)
+                else:
+                    detail = str(err_json)
             except Exception:
                 pass
-            raise HTTPException(status_code=response.status_code, detail=detail)
+            raise HTTPException(status_code=response.status_code, detail=str(detail)[:500])
         return response
 
     async def close(self):
