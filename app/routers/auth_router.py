@@ -16,13 +16,14 @@ async def register(req: RegisterRequest):
     from app.main import user_store, tier_store
     import re
 
-    if not re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', req.email):
+    email = req.email.lower().strip()
+    if not re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', email):
         raise HTTPException(status_code=400, detail="邮箱格式不正确")
     if len(req.password) < 8:
         raise HTTPException(status_code=400, detail="密码至少 8 位")
     if not any(c.isalpha() for c in req.password) or not any(c.isdigit() for c in req.password):
         raise HTTPException(status_code=400, detail="密码需包含字母和数字")
-    if user_store.get_by_email(req.email):
+    if user_store.get_by_email(email):
         raise HTTPException(status_code=400, detail="该邮箱已注册")
     if user_store.get_by_username(req.username):
         raise HTTPException(status_code=400, detail="该用户名已被使用")
@@ -40,7 +41,7 @@ async def register(req: RegisterRequest):
     user = User(
         id=user_id,
         username=req.username,
-        email=req.email,
+        email=email,
         hashed_password=hashed_pw,
         api_key_hash=key_hash,
         api_key_prefix=key_prefix,

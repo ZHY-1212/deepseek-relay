@@ -24,8 +24,9 @@ class UserStore:
 
     def get_by_email(self, email: str) -> Optional[User]:
         data = self._all()
+        email_lower = email.lower().strip()
         for u in data.values():
-            if u["email"] == email:
+            if u["email"].lower().strip() == email_lower:
                 return User(**u)
         return None
 
