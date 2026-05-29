@@ -7,6 +7,7 @@ from app.store.user_store import UserStore
 PUBLIC_PATHS = {"/", "/app", "/health", "/auth/login", "/auth/register", "/docs", "/openapi.json", "/favicon.ico"}
 PUBLIC_V1 = {"/v1/models"}  # model list is public
 PUBLIC_PREFIXES = ("/payment/notify",)  # PayJS callback
+PUBLIC_ADMIN_GETS = {"/admin/payment-qr"}  # QR codes readable by any logged-in user
 STATIC_PREFIXES = ("/static/",)
 
 
@@ -57,9 +58,12 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 raise HTTPException(status_code=401, detail="用户不存在")
             if user.is_banned:
                 raise HTTPException(status_code=403, detail="账号已被封禁")
-            # Admin check
+            # Admin check (except public admin GETs)
             if path.startswith("/admin/") and not user.is_admin:
-                raise HTTPException(status_code=403, detail="需要管理员权限")
+                if request.method == "GET" and path in PUBLIC_ADMIN_GETS:
+                    pass  # allow
+                else:
+                    raise HTTPException(status_code=403, detail="需要管理员权限")
             request.state.user = user
             request.state.auth_method = "jwt"
 
