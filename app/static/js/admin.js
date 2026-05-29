@@ -109,9 +109,17 @@ registerRoute('#/admin', function(container) {
         } else if (currentTab === 'qr') {
             area.innerHTML = '<div class="section-title">收款码设置</div>'+
                 '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">'+
-                '<div class="card"><h3 style="font-size:14px;margin-bottom:10px">微信收款码</h3><input type="file" id="wx-file" accept="image/*" style="display:none"><button class="btn-outline" id="btn-wx">上传微信码</button><div id="wx-preview" style="margin-top:10px"></div></div>'+
-                '<div class="card"><h3 style="font-size:14px;margin-bottom:10px">支付宝收款码</h3><input type="file" id="zfb-file" accept="image/*" style="display:none"><button class="btn-outline" id="btn-zfb">上传支付宝码</button><div id="zfb-preview" style="margin-top:10px"></div></div>'+
+                '<div class="card"><h3 style="font-size:14px;margin-bottom:10px">微信收款码</h3><div id="wx-preview" style="margin-bottom:10px">加载中...</div><input type="file" id="wx-file" accept="image/*" style="display:none"><button class="btn-outline" id="btn-wx">更换微信码</button></div>'+
+                '<div class="card"><h3 style="font-size:14px;margin-bottom:10px">支付宝收款码</h3><div id="zfb-preview" style="margin-bottom:10px">加载中...</div><input type="file" id="zfb-file" accept="image/*" style="display:none"><button class="btn-outline" id="btn-zfb">更换支付宝码</button></div>'+
                 '</div><span id="qr-msg" class="inline-msg"></span>';
+
+            // Load existing QR codes
+            api.get('/admin/payment-qr').then(function(d){
+                if (d.wechat_qr) document.getElementById('wx-preview').innerHTML = '<img src="'+d.wechat_qr+'" style="max-width:180px;border-radius:8px;border:1px solid var(--border)"><p style="font-size:11px;color:var(--green);margin-top:4px">已设置</p>';
+                else document.getElementById('wx-preview').innerHTML = '<p style="color:var(--text-tertiary);font-size:13px">未上传</p>';
+                if (d.alipay_qr) document.getElementById('zfb-preview').innerHTML = '<img src="'+d.alipay_qr+'" style="max-width:180px;border-radius:8px;border:1px solid var(--border)"><p style="font-size:11px;color:var(--green);margin-top:4px">已设置</p>';
+                else document.getElementById('zfb-preview').innerHTML = '<p style="color:var(--text-tertiary);font-size:13px">未上传</p>';
+            });
 
             function doUpload(fileInput, btn, preview, key) {
                 btn.addEventListener('click',function(){ fileInput.click(); });
