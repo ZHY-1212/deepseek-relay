@@ -5,8 +5,11 @@ registerRoute('#/login', (container) => {
         container.innerHTML = `
             <div class="auth-page">
                 <div class="auth-card">
-                    <h1>DeepSeek Relay</h1>
-                    <p class="subtitle">AI API 服务平台</p>
+                    <div style="text-align:center;margin-bottom:8px">
+                        <svg width="40" height="40" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#4f46e5"/><path d="M16 6C11 6 7 10 6 14 5 16 5 19 7 21 9 23 12 23 15 22 18 21 21 19 23 16 25 13 24 10 22 8 20 6 17 6 16 6Z" fill="#fff" opacity=".3"/><circle cx="12" cy="13" r="2" fill="#fff"/><path d="M17 12c1.5-1.5 5-3 7-3" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+                    </div>
+                    <h1>DS Relay</h1>
+                    <p class="subtitle">DeepSeek AI API 聚合平台</p>
                     <div class="tabs">
                         <button id="tab-login" class="${tab === 'login' ? 'active' : ''}">登录</button>
                         <button id="tab-register" class="${tab === 'register' ? 'active' : ''}">注册</button>

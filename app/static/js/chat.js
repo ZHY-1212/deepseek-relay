@@ -7,7 +7,9 @@ registerRoute('#/chat', (container) => {
 
     const STORAGE_KEY = 'chat_messages';
     const H24 = 24 * 60 * 60 * 1000;
-    const modelIcons = { 'deepseek-chat': '✦', 'deepseek-reasoner': '◈' };
+    // DeepSeek whale logo SVG
+    const whaleIcon = '<svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" style=\"vertical-align:middle\"><path d=\"M12 4C8 4 4 8 3 12C2 14 2 17 4 19C6 21 9 21 12 20C15 19 18 17 20 14C22 11 21 8 19 6C17 4 14 4 12 4Z\" fill=\"#4f46e5\" opacity=\"0.2\"/><circle cx=\"9\" cy=\"12\" r=\"1.5\" fill=\"#4f46e5\"/><path d=\"M14 11C15 10 18 9 20 9\" stroke=\"#4f46e5\" stroke-width=\"2\" stroke-linecap=\"round\"/></svg>';
+    const modelIcons = { 'deepseek-chat': whaleIcon, 'deepseek-reasoner': whaleIcon };
 
     function saveMessages() {
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(messages)); } catch(e) {}
