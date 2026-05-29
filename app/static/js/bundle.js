@@ -521,7 +521,7 @@ registerRoute('#/chat', function(container) {
 
     function buildOneMsg(m, idx) {
         var ts = m.ts ? fmtTime(m.ts) : '';
-        if (m.role === 'user') return '<div class="chat-msg user"><div class="role">你 <span class="msg-time">'+ts+'</span></div>'+(m.image?'<img src="'+m.image+'" class="chat-img" style="max-width:240px;max-height:240px;border-radius:10px;margin-bottom:4px">':'')+'<div class="bubble">'+escHtml(m.content)+'</div></div>';
+        if (m.role === 'user') return '<div class="chat-msg user"><div class="role">你 <span class="msg-time">'+ts+'</span></div>'+(m.image?'<img src="'+m.image+'" class="chat-img" style="max-width:160px;max-height:160px;border-radius:10px;margin-bottom:4px">':'')+'<div class="bubble">'+escHtml(m.content)+'</div></div>';
 
         var icon = '✦'; var name = m.model || 'assistant';
         var html = '<div class="chat-msg assistant"><div class="role"><span class="model-icon">'+icon+'</span> '+name+' <span class="msg-time">'+ts+'</span>'+(m.tokens?' <span class="tokens">'+m.tokens+' tokens</span>':'')+'</div>'+
@@ -617,7 +617,8 @@ registerRoute('#/chat', function(container) {
             img.onload=function(){
                 var maxW=1024,maxH=1024;
                 var w=img.width,h=img.height;
-                if(w>maxW||h>maxH){var ratio=Math.min(maxW/w,maxH/h);w=Math.round(w*ratio);h=Math.round(h*ratio)}
+                var maxW=512,maxH=512;
+            if(w>maxW||h>maxH){var ratio=Math.min(maxW/w,maxH/h);w=Math.round(w*ratio);h=Math.round(h*ratio)}
                 var canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
                 var ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);
                 pendingImage={dataUrl:canvas.toDataURL('image/jpeg',0.85),filename:f.name};render();
