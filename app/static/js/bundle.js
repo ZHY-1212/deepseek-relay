@@ -84,304 +84,181 @@ function navigate() {
 
 window.addEventListener('hashchange', navigate);
 window.addEventListener('load', navigate);
-registerRoute('#/login', (container) => {
-    let tab = 'login';
-
+registerRoute('#/login', function(container) {
+    var tab = 'login';
     function render() {
-        container.innerHTML = `
-            <div class="auth-page">
-                <div class="auth-card">
-                    <div style="text-align:center;margin-bottom:8px">
-                        <svg width="40" height="40" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#4f46e5"/><path d="M16 6C11 6 7 10 6 14 5 16 5 19 7 21 9 23 12 23 15 22 18 21 21 19 23 16 25 13 24 10 22 8 20 6 17 6 16 6Z" fill="#fff" opacity=".3"/><circle cx="12" cy="13" r="2" fill="#fff"/><path d="M17 12c1.5-1.5 5-3 7-3" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
-                    </div>
-                    <h1>DS Relay</h1>
-                    <p class="subtitle">DeepSeek AI API 聚合平台</p>
-                    <div class="tabs">
-                        <button id="tab-login" class="${tab === 'login' ? 'active' : ''}">登录</button>
-                        <button id="tab-register" class="${tab === 'register' ? 'active' : ''}">注册</button>
-                    </div>
-                    <form id="auth-form">
-                        ${tab === 'register' ? `
-                        <input type="text" id="username" placeholder="用户名" required autocomplete="username">
-                        <input type="email" id="email" placeholder="邮箱" required autocomplete="email">
-                        ` : `
-                        <input type="text" id="account" placeholder="用户名或邮箱" required autocomplete="username">
-                        `}
-                        <input type="password" id="password" placeholder="密码" required autocomplete="current-password">
-                        <div id="form-error" class="error"></div>
-                        <button type="submit" class="btn-submit">
-                            ${tab === 'login' ? '登 录' : '注 册'}
-                        </button>
-                    </form>
-                </div>
-            </div>
-        `;
-
-        document.getElementById('tab-login').addEventListener('click', () => { tab = 'login'; render(); });
-        document.getElementById('tab-register').addEventListener('click', () => { tab = 'register'; render(); });
-        document.getElementById('auth-form').addEventListener('submit', handleSubmit);
+        container.innerHTML = '<div class="auth-page"><div class="auth-card">' +
+            '<div class="auth-icon"><svg width="48" height="48" viewBox="0 0 48 48"><rect width="48" height="48" rx="12" fill="#6366f1"/><path d="M24 8c-7 0-13 6-14 12-1 3-1 8 2 11 3 3 8 3 12 2 5-1 10-5 13-10 3-5 2-9-1-12-3-3-8-3-12-3z" fill="#fff" opacity=".25"/><circle cx="17" cy="20" r="2.5" fill="#fff"/><path d="M26 18c2-2 7-4 9-4" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg></div>' +
+            '<h1>DS Relay</h1><p class="subtitle">多模型 AI API 聚合平台<br>一个 Key 调用所有主流大模型</p>' +
+            '<div class="tabs"><button id="tab-login" class="'+(tab==='login'?'active':'')+'">登录</button><button id="tab-register" class="'+(tab==='register'?'active':'')+'">注册</button></div>' +
+            '<form id="auth-form">' +
+            (tab==='register' ?
+                '<div class="input-group"><label>用户名</label><input type="text" id="username" placeholder="你的用户名" required autocomplete="username"></div>' +
+                '<div class="input-group"><label>邮箱</label><input type="email" id="email" placeholder="your@email.com" required autocomplete="email"></div>' :
+                '<div class="input-group"><label>账户</label><input type="text" id="account" placeholder="用户名或邮箱" required autocomplete="username"></div>') +
+            '<div class="input-group"><label>密码</label><input type="password" id="password" placeholder="输入密码" required autocomplete="current-password"></div>' +
+            '<div id="form-error" class="error"></div>' +
+            '<button type="submit" class="btn-submit">'+(tab==='login'?'登 录':'创建账户')+'</button>' +
+            '</form>' +
+            '<p class="footer-note">'+(tab==='login'?'还没有账户？点击「注册」':'已有账户？点击「登录」')+'<br>注册即表示同意 <a href="#/pricing" style="color:var(--accent)">服务条款</a> · 首个注册用户自动成为 <span>管理员</span></p>' +
+            '</div></div>';
+        document.getElementById('tab-login').addEventListener('click',function(){tab='login';render()});
+        document.getElementById('tab-register').addEventListener('click',function(){tab='register';render()});
+        document.getElementById('auth-form').addEventListener('submit',handleSubmit);
     }
-
     async function handleSubmit(e) {
         e.preventDefault();
-        const errEl = document.getElementById('form-error');
-        errEl.style.display = 'none';
-        const password = document.getElementById('password').value;
-
+        var errEl=document.getElementById('form-error');
+        errEl.style.display='none';
+        var pw=document.getElementById('password').value;
         try {
-            if (tab === 'register') {
-                const username = document.getElementById('username').value;
-                const email = document.getElementById('email').value;
-                const data = await api.post('/auth/register', { username, email, password });
-                api.setToken(data.access_token);
-                localStorage.setItem('user', JSON.stringify(data.user));
-                if (data.api_key) {
-                    localStorage.setItem('new_api_key', data.api_key);
-                }
+            var data;
+            if(tab==='register') {
+                data=await api.post('/auth/register',{username:document.getElementById('username').value,email:document.getElementById('email').value,password:pw});
             } else {
-                const account = document.getElementById('account').value;
-                const data = await api.post('/auth/login', { account, password });
-                api.setToken(data.access_token);
-                localStorage.setItem('user', JSON.stringify(data.user));
+                data=await api.post('/auth/login',{account:document.getElementById('account').value,password:pw});
             }
-            window.location.hash = '#/dashboard';
-        } catch (err) {
-            errEl.textContent = err.message;
-            errEl.style.display = 'block';
-        }
+            api.setToken(data.access_token);
+            localStorage.setItem('user',JSON.stringify(data.user));
+            if(data.api_key) localStorage.setItem('new_api_key',data.api_key);
+            window.location.hash='#/models';
+        } catch(err) { errEl.textContent=err.message; errEl.style.display='block'; }
     }
-
     render();
-    return { unmount() {} };
+    return {unmount:function(){}};
 });
-registerRoute('#/models', (container) => {
-    const providers = [
-        { id: 'deepseek', name: 'DeepSeek 官方', desc: '代码能力国产第一，综合最均衡', url: 'api.deepseek.com', models: [
-            { id: 'deepseek-chat', name: 'DeepSeek Chat', desc: '通用对话旗舰，支持图片识别', tags: ['多模态','128K','¥2/百万Token'] },
-            { id: 'deepseek-reasoner', name: 'DeepSeek Reasoner', desc: '深度推理模型，复杂逻辑分析', tags: ['推理增强','128K','¥4/百万Token'] },
+registerRoute('#/models', function(container) {
+    var providers = [
+        { id:'deepseek', name:'DeepSeek 官方', desc:'代码能力国产第一，综合最均衡', color:'#4f46e5', icon:'DS', models:[
+            {id:'deepseek-chat',name:'DeepSeek Chat',desc:'通用旗舰 · 支持图片识别 · 128K 上下文',tags:['多模态','128K','对话']},
+            {id:'deepseek-reasoner',name:'DeepSeek Reasoner',desc:'深度推理 · 复杂逻辑 · 数学编程',tags:['推理','128K','逻辑']}
         ]},
-        { id: 'siliconflow', name: '硅基流动', desc: '100+开源模型聚合，国内直连', url: 'api.siliconflow.cn', models: [
-            { id: 'deepseek-ai/DeepSeek-V3', name: 'DeepSeek V3', desc: '硅基流动托管，更快响应', tags: ['多模态','128K','开源'] },
-            { id: 'deepseek-ai/DeepSeek-R1', name: 'DeepSeek R1', desc: '推理模型，支持思考过程', tags: ['推理增强','128K','开源'] },
-            { id: 'Qwen/Qwen2.5-72B-Instruct', name: 'Qwen2.5 72B', desc: '阿里通义千问旗舰', tags: ['中文优化','128K','开源'] },
-            { id: 'zai-org/GLM-4.6', name: 'GLM-4.6', desc: '智谱最新对话模型', tags: ['速度快','128K','开源'] },
+        { id:'siliconflow', name:'硅基流动', desc:'100+ 开源模型聚合，国内直连低延迟', color:'#7c3aed', icon:'SF', models:[
+            {id:'deepseek-ai/DeepSeek-V3',name:'DeepSeek V3 (托管)',desc:'硅基托管 DeepSeek · 更快响应 · 开源',tags:['多模态','128K','托管']},
+            {id:'deepseek-ai/DeepSeek-R1',name:'DeepSeek R1 (托管)',desc:'硅基托管推理模型 · 思考过程可见',tags:['推理','128K','托管']},
+            {id:'Qwen/Qwen2.5-72B-Instruct',name:'Qwen2.5 72B',desc:'阿里通义千问旗舰 · 中文理解优秀',tags:['中文优化','128K','72B']},
+            {id:'zai-org/GLM-4.6',name:'GLM-4.6',desc:'智谱最新 · 响应速度快 · 均衡表现',tags:['速度快','128K','最新']}
         ]},
-        { id: 'dashscope', name: '阿里百炼', desc: '通义千问系列，中文理解强', url: 'dashscope.aliyun.com', models: [
-            { id: 'qwen-plus', name: '通义千问 Plus', desc: '性价比之选，日常对话', tags: ['中文优化','128K','¥4/百万Token'] },
-            { id: 'qwen-max', name: '通义千问 Max', desc: '旗舰能力，复杂任务', tags: ['中文最强','128K','¥12/百万Token'] },
+        { id:'dashscope', name:'阿里百炼', desc:'通义千问系列 · 中文能力第一', color:'#f97316', icon:'QW', models:[
+            {id:'qwen-plus',name:'通义千问 Plus',desc:'性价比之选 · 日常对话 · 均衡性能',tags:['中文优化','128K','均衡']},
+            {id:'qwen-max',name:'通义千问 Max',desc:'旗舰能力 · 复杂任务 · 深度理解',tags:['中文最强','128K','旗舰']}
         ]},
-        { id: 'zhipu', name: '智谱 AI', desc: 'GLM系列，响应最快', url: 'open.bigmodel.cn', models: [
-            { id: 'glm-4-plus', name: 'GLM-4 Plus', desc: '高精度旗舰模型', tags: ['速度快','128K','¥4/百万Token'] },
-            { id: 'glm-4-flash', name: 'GLM-4 Flash', desc: '轻量快速，免费额度', tags: ['极速','128K','免费'] },
+        { id:'zhipu', name:'智谱 AI', desc:'GLM 系列 · 响应速度第一', color:'#2563eb', icon:'GL', models:[
+            {id:'glm-4-plus',name:'GLM-4 Plus',desc:'高精度旗舰 · 复杂推理 · 长文本',tags:['高精度','128K','旗舰']},
+            {id:'glm-4-flash',name:'GLM-4 Flash',desc:'轻量极速 · 免费额度 · 日常使用',tags:['极速','128K','轻量']}
         ]},
-        { id: 'volcengine', name: '火山方舟', desc: '字节豆包系列，速度最快', url: 'ark.cn-beijing.volces.com', models: [
-            { id: 'doubao-pro-256k', name: '豆包 Pro', desc: '字节旗舰，超长上下文', tags: ['256K','¥3/百万Token','中文优化'] },
-            { id: 'doubao-lite-128k', name: '豆包 Lite', desc: '轻量快速，每月100万免费', tags: ['极速','128K','免费额度'] },
+        { id:'volcengine', name:'火山方舟', desc:'字节豆包系列 · 速度与中文兼优', color:'#3370ff', icon:'DB', models:[
+            {id:'doubao-pro-256k',name:'豆包 Pro 256K',desc:'字节旗舰 · 超长上下文 · 中文优化',tags:['256K','旗舰','中文优化']},
+            {id:'doubao-lite-128k',name:'豆包 Lite 128K',desc:'轻量快速 · 免费额度 · 日常对话',tags:['极速','128K','轻量']}
         ]},
-        { id: 'moonshot', name: '月之暗面 Kimi', desc: '长文本处理专家', url: 'platform.moonshot.cn', models: [
-            { id: 'moonshot-v1-128k', name: 'Kimi 128K', desc: '超长上下文，文档分析', tags: ['128K','长文本','中文优化'] },
-        ]},
+        { id:'moonshot', name:'月之暗面', desc:'Kimi 系列 · 长文本处理专家', color:'#6d28d9', icon:'KM', models:[
+            {id:'moonshot-v1-128k',name:'Kimi 128K',desc:'超长上下文 · 文档分析 · 深度阅读',tags:['128K','长文本','阅读']}
+        ]}
     ];
 
-    container.innerHTML = `
-        <div class="page-header">
-            <h2>模型广场</h2>
-            <p>多平台聚合，统一 API 接入。选择一个模型即可在体验中心测试</p>
-        </div>
-        ${providers.filter(p => p.models.length > 0).map(prov => `
-        <div class="section-title">${prov.name} <span style="font-weight:400;font-size:13px;color:var(--text-tertiary);margin-left:8px">${prov.url}</span></div>
-        <div class="model-grid">
-            ${prov.models.map(m => `
-            <div class="model-card" onclick="window.location.hash='#/chat';localStorage.setItem('chat_model','${m.id}')">
-                <div class="prov-tag">${prov.name}</div>
-                <div class="model-name">${m.name}</div>
-                <div class="model-desc">${m.desc}</div>
-                <div class="model-meta">${m.tags.map(t => `<span class="meta-tag">${t}</span>`).join('')}</div>
-            </div>`).join('')}
-        </div>`).join('')}
-    `;
+    var html = '<div class="page-header"><h2>模型广场</h2><p>聚合 6 大平台 · ' + providers.reduce(function(s,p){return s+p.models.length},0) + ' 款模型 · 统一 API 接入</p></div>';
 
-    return { unmount() {} };
+    providers.forEach(function(prov) {
+        html += '<div class="section-title"><span style="display:inline-block;width:24px;height:24px;border-radius:6px;background:'+prov.color+';color:#fff;text-align:center;line-height:24px;font-size:11px;font-weight:700;margin-right:8px">'+prov.icon+'</span>'+prov.name+' <span style="font-weight:400;font-size:12px;color:var(--text-tertiary);margin-left:8px">'+prov.desc+'</span></div>';
+        html += '<div class="model-grid">';
+        prov.models.forEach(function(m) {
+            html += '<div class="model-card" onclick="localStorage.setItem(\'chat_model\',\''+m.id+'\');window.location.hash=\'#/chat\'">'+
+                '<div class="mc-icon" style="background:'+prov.color+'15;color:'+prov.color+'">'+prov.icon+'</div>'+
+                '<div class="mc-info"><div class="mc-provider">'+prov.name+'</div><div class="mc-name">'+m.name+'</div><div class="mc-desc">'+m.desc+'</div>'+
+                '<div class="mc-tags">'+m.tags.map(function(t){return '<span class="mc-tag">'+t+'</span>'}).join('')+'</div></div></div>';
+        });
+        html += '</div>';
+    });
+
+    container.innerHTML = html;
+    return {unmount:function(){}};
 });
-registerRoute('#/dashboard', (container) => {
-    let profile = null;
-
-    const tierNames = { free: '免费版', pro: '专业版', vip: '至尊版' };
-    const tierIcons = { free: '◯', pro: '◉', vip: '◆' };
+registerRoute('#/dashboard', function(container) {
+    var profile = null;
+    var tierNames = {free:'免费版',pro:'专业版',vip:'至尊版'};
 
     async function load() {
-        try {
-            profile = await api.get('/dashboard/profile');
-            localStorage.setItem('user', JSON.stringify(profile.user));
-        } catch (e) {
-            container.innerHTML = `<p style="color:var(--red)">加载失败：${e.message}</p>`;
-            return;
-        }
+        try { profile = await api.get('/dashboard/profile'); localStorage.setItem('user',JSON.stringify(profile.user)); }
+        catch(e) { container.innerHTML = '<p style="color:var(--red)">加载失败：'+e.message+'</p>'; return; }
         render();
     }
 
     function render() {
-        const u = profile.user;
-        const usage = profile.usage;
-        const tierDefs = {
-            free: { tokens: 100000, reqs: 50, price: 0, icon: '◯', desc: '试用体验' },
-            pro: { tokens: 2000000, reqs: 500, price: 19.9, icon: '◉', desc: '个人开发者' },
-            vip: { tokens: 10000000, reqs: '无限制', price: 49.9, icon: '◆', desc: '企业级用户' },
+        var u = profile.user;
+        var usage = profile.usage;
+        var tierDefs = {
+            free: {tokens:100000,reqs:50,price:0,icon:'◯',desc:'试用体验'},
+            pro: {tokens:2000000,reqs:500,price:19.9,icon:'◉',desc:'个人开发者'},
+            vip: {tokens:10000000,reqs:'∞',price:49.9,icon:'◆',desc:'企业级用户'}
         };
-        const currentTier = tierDefs[u.tier];
-        const pct = Math.min(100, (u.balance_tokens / currentTier.tokens) * 100);
-        const meterColor = pct > 60 ? 'var(--green)' : pct > 30 ? 'var(--amber)' : 'var(--red)';
+        var ct = tierDefs[u.tier];
+        var pct = ct.tokens>0?Math.min(100,(u.balance_tokens/ct.tokens)*100):0;
+        var mc = pct>60?'var(--green)':pct>30?'var(--amber)':'var(--red)';
 
-        const newApiKey = localStorage.getItem('new_api_key');
-        if (newApiKey) {
-            setTimeout(() => { showToast('API Key（仅显示一次）：' + newApiKey, 'success'); localStorage.removeItem('new_api_key'); }, 500);
-        }
+        var newKey = localStorage.getItem('new_api_key');
+        if(newKey) { setTimeout(function(){showToast('API Key（仅显示一次）：'+newKey,'success');localStorage.removeItem('new_api_key')},500); }
 
-        container.innerHTML = `
-            <div class="page-header">
-                <h2>仪表盘</h2>
-                <p>欢迎回来，${u.username}</p>
-            </div>
+        container.innerHTML =
+            '<div class="page-header"><h2>控制台</h2><p>账户概览 · Token 消耗统计 · 套餐管理</p></div>'+
 
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">⚡</div>
-                    <div class="stat-label">Token 余额</div>
-                    <div class="stat-value">${(u.balance_tokens / 1000).toFixed(1)}<span style="font-size:14px;font-weight:500;color:var(--text-secondary)">k</span></div>
-                    <div class="meter"><div class="meter-fill" style="width:${pct}%;background:${meterColor}"></div></div>
-                    <div class="stat-sub">本月额度 / ${(currentTier.tokens/1000).toFixed(0)}k</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">📊</div>
-                    <div class="stat-label">今日请求</div>
-                    <div class="stat-value">${usage.today_requests}</div>
-                    <div class="stat-sub">今日 Token：${usage.today_tokens.toLocaleString()}</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">📈</div>
-                    <div class="stat-label">累计请求</div>
-                    <div class="stat-value">${usage.total_requests}</div>
-                    <div class="stat-sub">累计 Token：${usage.total_tokens.toLocaleString()}</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">${tierIcons[u.tier]}</div>
-                    <div class="stat-label">当前套餐</div>
-                    <div class="stat-value" style="font-size:20px">${tierNames[u.tier]}</div>
-                    <div class="stat-sub">${currentTier.desc}</div>
-                </div>
-            </div>
+            // Stats row
+            '<div class="stats-grid">'+
+            '<div class="stat-card"><div class="stat-label">Token 余额</div><div class="stat-value">'+(u.balance_tokens/1000).toFixed(1)+'<span style="font-size:14px;font-weight:500;color:var(--text-secondary)">k</span></div><div class="meter"><div class="meter-fill" style="width:'+pct+'%;background:'+mc+'"></div></div><span style="font-size:12px;color:var(--text-tertiary)">本月 / '+(ct.tokens/1000).toFixed(0)+'k</span></div>'+
+            '<div class="stat-card"><div class="stat-label">今日请求</div><div class="stat-value">'+usage.today_requests+'</div><span style="font-size:12px;color:var(--text-tertiary)">Token：'+usage.today_tokens.toLocaleString()+'</span></div>'+
+            '<div class="stat-card"><div class="stat-label">累计请求</div><div class="stat-value">'+usage.total_requests+'</div><span style="font-size:12px;color:var(--text-tertiary)">Token：'+usage.total_tokens.toLocaleString()+'</span></div>'+
+            '<div class="stat-card"><div class="stat-label">当前套餐</div><div class="stat-value" style="font-size:20px"><span class="badge badge-'+u.tier+'">'+tierNames[u.tier]+'</span></div><span style="font-size:12px;color:var(--text-tertiary)">'+ct.desc+'</span></div>'+
+            '</div>'+
 
-            <div class="section-title">📉 近 7 天用量趋势</div>
-            <div class="card">
-                ${buildChart(usage.last_7_days)}
-                <div class="chart-labels">${usage.last_7_days.map(d => `<span>${d.date.slice(5)}</span>`).join('')}</div>
-            </div>
+            // Charts
+            '<div class="chart-row">'+
+            '<div class="chart-card"><h3>输入 Token（近 7 天）</h3>'+buildChart(usage.last_7_days,'tokens','var(--blue)')+'<div class="chart-labels">'+usage.last_7_days.map(function(d){return '<span>'+d.date.slice(5)+'</span>'}).join('')+'</div></div>'+
+            '<div class="chart-card"><h3>请求次数（近 7 天）</h3>'+buildChart(usage.last_7_days,'requests','var(--accent)')+'<div class="chart-labels">'+usage.last_7_days.map(function(d){return '<span>'+d.date.slice(5)+'</span>'}).join('')+'</div></div>'+
+            '</div>'+
 
-            <div class="section-title">${tierIcons[u.tier]} 升级套餐</div>
-            <div class="tier-grid">
-                ${['free','pro','vip'].map(t => {
-                    const d = tierDefs[t];
-                    const isCurrent = u.tier === t;
-                    return `
-                    <div class="tier-card ${isCurrent ? 'active' : ''}" id="tier-${t}">
-                        <div class="tier-icon">${d.icon}</div>
-                        <h3>${tierNames[t]}</h3>
-                        <div class="price">${d.price === 0 ? '免费' : '¥' + d.price}<span>/月</span></div>
-                        <div class="features">
-                            <div>◆ ${d.tokens.toLocaleString()} Token</div>
-                            <div>◆ ${typeof d.reqs === 'number' ? d.reqs.toLocaleString() : d.reqs} 请求/天</div>
-                            <div>◆ ${d.desc}</div>
-                        </div>
-                        <button ${isCurrent ? 'disabled' : ''} id="btn-upgrade-${t}">
-                            ${isCurrent ? '当前套餐' : '立即升级'}
-                        </button>
-                    </div>`;
-                }).join('')}
-            </div>
+            // Tier cards
+            '<div class="section-title">升级套餐</div><div class="tier-grid">'+
+            ['free','pro','vip'].map(function(t){
+                var d=tierDefs[t]; var isC=u.tier===t;
+                return '<div class="tier-card'+(isC?' active':'')+'"><div class="tier-icon">'+d.icon+'</div><h3>'+tierNames[t]+'</h3><div class="price">'+(d.price===0?'免费':'¥'+d.price)+'<span>/月</span></div><div class="features"><div>◆ '+d.tokens.toLocaleString()+' Token/月</div><div>◆ '+(typeof d.reqs==='number'?d.reqs.toLocaleString():d.reqs)+' 请求/天</div><div>◆ '+d.desc+'</div></div><button '+(isC?'disabled':'id="btn-up-'+t+'"')+'>'+(isC?'当前套餐':'立即升级')+'</button></div>';
+            }).join('')+'</div>'+
 
-            <div class="section-title">🔑 API Key
-                <span class="badge badge-${u.tier}" style="margin-left:8px">${tierNames[u.tier]}</span>
-            </div>
-            <div class="card">
-                <div class="api-key-display" title="点击复制">${u.api_key_prefix}</div>
-                <div style="display:flex;gap:8px;margin-top:12px;align-items:center">
-                    <span style="font-size:12px;color:var(--text-tertiary)">完整 Key 仅在创建时显示一次</span>
-                    <button class="btn-sm" id="btn-reset-key" style="margin-left:auto">重新生成</button>
-                </div>
-            </div>
-        `;
+            // API Key
+            '<div class="section-title">API Key</div><div class="card"><div class="api-key-display">'+u.api_key_prefix+'</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px"><span style="font-size:12px;color:var(--text-tertiary)">完整 Key 仅创建时显示一次</span><button class="btn-sm" id="btn-reset-key">重新生成</button></div></div>';
 
-        // Chart bars hover
-        document.querySelectorAll('.chart-bar').forEach(bar => {
-            bar.addEventListener('mouseenter', function() { this.style.opacity = '1'; });
-            bar.addEventListener('mouseleave', function() { this.style.opacity = ''; });
+        // Upgrade btns
+        ['free','pro','vip'].forEach(function(t){
+            var btn=document.getElementById('btn-up-'+t);
+            if(btn) btn.addEventListener('click',function(e){e.stopPropagation();
+                api.post('/payment/create-order',{tier:t}).then(function(o){showPaymentModal(o,tierNames[t],tierDefs[t].price)}).catch(function(e){showToast(e.message,'error')});
+            });
         });
 
-        // API key click
-        document.querySelector('.api-key-display')?.addEventListener('click', function() {
-            navigator.clipboard.writeText(this.textContent).then(() => showToast('已复制', 'success'));
+        var kd=container.querySelector('.api-key-display');
+        if(kd) kd.addEventListener('click',function(){navigator.clipboard.writeText(this.textContent).then(function(){showToast('已复制','success')})});
+
+        var rb=document.getElementById('btn-reset-key');
+        if(rb) rb.addEventListener('click',function(){if(!confirm('重新生成后旧 Key 立即失效，确认？'))return;
+            api.post('/dashboard/reset-api-key').then(function(d){showToast('新 Key：'+d.api_key,'success');load()}).catch(function(e){showToast(e.message,'error')});
         });
 
-        // Reset key
-        document.getElementById('btn-reset-key')?.addEventListener('click', async () => {
-            if (!confirm('重新生成后旧 Key 立即失效，确认？')) return;
-            try {
-                const data = await api.post('/dashboard/reset-api-key');
-                showToast('新 Key：' + data.api_key, 'success');
-                await load();
-            } catch(e) { showToast(e.message, 'error'); }
-        });
-
-        // Upgrade buttons
-        ['free','pro','vip'].forEach(t => {
-            const btn = document.getElementById('btn-upgrade-' + t);
-            if (btn && !btn.disabled) {
-                btn.addEventListener('click', async (e) => {
-                    e.stopPropagation();
-                    try {
-                        const order = await api.post('/payment/create-order', { tier: t });
-                        showPaymentModal(order, tierNames[t], tierDefs[t].price);
-                    } catch(er) { showToast(er.message, 'error'); }
-                });
-            }
+        // Chart hover
+        container.querySelectorAll('.chart-bar').forEach(function(b){
+            b.addEventListener('mouseenter',function(){this.style.opacity='1'});
+            b.addEventListener('mouseleave',function(){this.style.opacity=''});
         });
     }
 
-    function buildChart(days) {
-        const maxVal = Math.max(1, ...days.map(d => d.tokens));
-        return '<div class="chart-bars">' + days.map(d => {
-            const h = Math.max(4, (d.tokens / maxVal) * 100);
-            return `<div class="chart-bar" style="height:${h}%;background:${d.tokens > 0 ? 'var(--accent)' : 'var(--border)'};opacity:${d.tokens > 0 ? '.65' : '.4'}"><span class="bar-tip">${d.tokens.toLocaleString()}</span></div>`;
-        }).join('') + '</div>';
+    function buildChart(days, key, color) {
+        var max=Math.max(1,Math.max.apply(null,days.map(function(d){return d[key]})));
+        return '<div class="chart-bars">'+days.map(function(d){
+            var h=Math.max(4,(d[key]/max)*100);
+            return '<div class="chart-bar" style="height:'+h+'%;background:'+color+';opacity:'+(d[key]>0?'.7':'.3')+'">'+ (d[key]>0?'<span class="bar-tip">'+d[key].toLocaleString()+'</span>':'') +'</div>';
+        }).join('')+'</div>';
     }
 
     load();
-    return { unmount() {} };
+    return {unmount:function(){}};
 });
-
-// Payment modal (shared)
-function showPaymentModal(order, tierName, price) {
-    const overlay = document.createElement('div');
-    overlay.className = 'modal-overlay';
-    overlay.innerHTML = `
-        <div class="modal-card">
-            <div class="modal-header"><h3>升级至 ${tierName}</h3><button class="modal-close">&times;</button></div>
-            <div class="modal-body" style="text-align:center">
-                <div style="font-size:2.5rem;font-weight:700;margin-bottom:4px">¥${price}</div>
-                <p style="color:var(--text-secondary);font-size:13px;margin-bottom:20px">订单号：${order.order_id.slice(0,8)}…</p>
-                <div style="background:var(--bg-hover);border-radius:var(--radius);padding:16px;margin-bottom:16px;font-size:13px;color:var(--text-secondary);text-align:left;line-height:1.8">
-                    <strong style="color:var(--text)">📋 付款说明</strong><br>
-                    1. 联系管理员获取收款码<br>
-                    2. 付款时备注订单号<br>
-                    3. 管理员确认后自动升级
-                </div>
-                <p style="font-size:12px;color:var(--text-tertiary)">支付后请联系管理员确认</p>
-            </div>
-        </div>`;
-    document.body.appendChild(overlay);
-    overlay.querySelector('.modal-close').addEventListener('click', () => overlay.remove());
-    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
-}
 registerRoute('#/chat', (container) => {
     let messages = [];
     let streaming = false;
@@ -429,6 +306,11 @@ registerRoute('#/chat', (container) => {
     }
 
     function render() {
+        // Preserve scroll position
+        var msgDiv = document.getElementById('chat-messages');
+        var scrollTop = msgDiv ? msgDiv.scrollTop : 0;
+        var wasAtBottom = msgDiv ? (msgDiv.scrollTop + msgDiv.clientHeight >= msgDiv.scrollHeight - 40) : true;
+
         const { recent, older } = getSplitMessages();
         const visible = showHistory ? messages : recent;
         const hiddenCount = messages.length - visible.length;
@@ -480,9 +362,10 @@ registerRoute('#/chat', (container) => {
                     </div>` : ''}
                     <div class="chat-input-row">
                         <input type="text" id="chat-input" placeholder="${pendingImage ? '描述这张图片...' : '输入消息，Enter 发送'}" autocomplete="off">
-                        <button type="button" class="btn-upload" id="btn-upload" title="上传图片">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                        </button>
+                        <div class="chat-toolbar">
+                            <button type="button" id="btn-upload" title="上传图片">🖼</button>
+                            <button type="button" id="btn-link" title="粘贴链接">🔗</button>
+                        </div>
                         <input type="file" id="file-input" accept="image/*" style="display:none">
                         <button type="submit" id="btn-send">发送</button>
                     </div>
@@ -520,11 +403,15 @@ registerRoute('#/chat', (container) => {
             </div>
         `;
 
-        setTimeout(() => {
-            const msgDiv = document.getElementById('chat-messages');
-            if (msgDiv) msgDiv.scrollTo({ top: msgDiv.scrollHeight, behavior: 'smooth' });
+        // Restore scroll position after render
+        setTimeout(function() {
+            var md = document.getElementById('chat-messages');
+            if (md) {
+                if (wasAtBottom) md.scrollTop = md.scrollHeight;
+                else md.scrollTop = Math.min(scrollTop, md.scrollHeight);
+            }
             document.getElementById('chat-input')?.focus();
-        }, 100);
+        }, 20);
 
         // Persist model selection
         document.getElementById('model-select').addEventListener('change', function() {
@@ -533,7 +420,15 @@ registerRoute('#/chat', (container) => {
         });
 
         document.getElementById('chat-form').addEventListener('submit', handleSend);
-        document.getElementById('btn-upload').addEventListener('click', () => document.getElementById('file-input').click());
+        document.getElementById('btn-upload').addEventListener('click', function() { document.getElementById('file-input').click(); });
+        document.getElementById('btn-link').addEventListener('click', function() {
+            var url = prompt('粘贴图片链接：');
+            if (url && url.trim()) {
+                pendingImage = { dataUrl: url.trim(), filename: 'link' };
+                render();
+                showToast('图片链接已添加', 'success');
+            }
+        });
         document.getElementById('file-input').addEventListener('change', handleFileSelect);
         if (pendingImage) document.getElementById('img-remove').addEventListener('click', handleRemoveImage);
 
@@ -1328,6 +1223,42 @@ registerRoute('#/profile', (container) => {
 
     render();
     return { unmount() {} };
+});
+registerRoute('#/pricing', function(container) {
+    container.innerHTML = '<div class="page-header"><h2>计费规则</h2><p>透明定价，按量计费。以下价格为平台售价，已包含服务溢价</p></div>'+
+
+    '<div class="section-title">月费套餐</div>'+
+    '<div class="tier-grid">'+
+    '<div class="tier-card"><div class="tier-icon">◯</div><h3>免费版</h3><div class="price">免费</div><div class="features"><div>◆ 10万 Token/月</div><div>◆ 50 请求/天</div><div>◆ 基础模型支持</div><div>◆ 社区支持</div></div></div>'+
+    '<div class="tier-card"><div class="tier-icon">◉</div><h3>专业版</h3><div class="price">¥19.9<span>/月</span></div><div class="features"><div>◆ 200万 Token/月</div><div>◆ 500 请求/天</div><div>◆ 全部模型可用</div><div>◆ 优先技术支持</div></div></div>'+
+    '<div class="tier-card"><div class="tier-icon">◆</div><h3>至尊版</h3><div class="price">¥49.9<span>/月</span></div><div class="features"><div>◆ 1000万 Token/月</div><div>◆ 请求无限制</div><div>◆ 全部模型可用</div><div>◆ 专属客服通道</div></div></div>'+
+    '</div>'+
+
+    '<div class="section-title">各模型 Token 价格 <span style="font-size:12px;color:var(--text-tertiary);font-weight:400">（输入 / 输出，单位：元/百万 Token）</span></div>'+
+    '<div class="card" style="padding:0;overflow:hidden"><table class="pricing-table"><thead><tr><th>平台</th><th>模型</th><th>输入价格</th><th>输出价格</th><th>特点</th></tr></thead><tbody>'+
+    '<tr><td><strong>DeepSeek 官方</strong></td><td>deepseek-chat</td><td class="price-cell">¥3.0</td><td class="price-cell">¥12.0</td><td>代码能力强，通用对话</td></tr>'+
+    '<tr><td>DeepSeek 官方</td><td>deepseek-reasoner</td><td class="price-cell">¥6.0</td><td class="price-cell">¥24.0</td><td>深度推理，复杂逻辑</td></tr>'+
+    '<tr><td><strong>硅基流动</strong></td><td>DeepSeek-V3 / R1</td><td class="price-cell">¥3.0</td><td class="price-cell">¥12.0</td><td>开源模型托管，国内直连</td></tr>'+
+    '<tr><td>硅基流动</td><td>Qwen2.5-72B</td><td class="price-cell">¥5.0</td><td class="price-cell">¥16.0</td><td>阿里通义千问，中文优化</td></tr>'+
+    '<tr><td>硅基流动</td><td>GLM-4.6</td><td class="price-cell">¥5.0</td><td class="price-cell">¥16.0</td><td>智谱对话模型，速度快</td></tr>'+
+    '<tr><td><strong>阿里百炼</strong></td><td>通义千问 Plus/Max</td><td class="price-cell">¥6.0</td><td class="price-cell">¥18.0</td><td>中文理解最强</td></tr>'+
+    '<tr><td><strong>智谱 AI</strong></td><td>GLM-4 Plus/Flash</td><td class="price-cell">¥6.0</td><td class="price-cell">¥18.0</td><td>极速响应，免费额度</td></tr>'+
+    '<tr><td><strong>火山方舟</strong></td><td>豆包 Pro/Lite</td><td class="price-cell">¥4.0</td><td class="price-cell">¥9.0</td><td>字节跳动，超快速度</td></tr>'+
+    '<tr><td><strong>Kimi</strong></td><td>Kimi 128K</td><td class="price-cell">¥5.0</td><td class="price-cell">¥16.0</td><td>超长上下文，文档分析</td></tr>'+
+    '</tbody></table></div>'+
+
+    '<div class="section-title">使用规则</div>'+
+    '<div class="card"><div style="line-height:2;font-size:14px;color:var(--text-secondary)">'+
+    '<p><strong>1. 计费方式：</strong>按实际消耗 Token 计费，输入和输出分别计算。1 Token ≈ 1 个中文字或 0.75 个英文单词。</p>'+
+    '<p><strong>2. 月费套餐：</strong>购买月费套餐后，在额度内不限模型使用。超出部分按量计费或等待下月重置。</p>'+
+    '<p><strong>3. API Key：</strong>每个账户拥有唯一 API Key，请妥善保管，泄露造成的损失由用户自行承担。</p>'+
+    '<p><strong>4. 调用限制：</strong>免费版每日 50 次请求，专业版 500 次。至尊版无限制。</p>'+
+    '<p><strong>5. 禁止用途：</strong>禁止用于生成违法、暴力、色情等违规内容。违者封禁账户不予退款。</p>'+
+    '<p><strong>6. 服务保障：</strong>我们会尽力保证服务可用性，但不对因第三方模型供应商故障导致的服务中断承担责任。</p>'+
+    '<p><strong>7. 退款政策：</strong>月费套餐购买后不支持退款。Token 余额不可提现。</p>'+
+    '</div></div>';
+
+    return {unmount:function(){}};
 });
 function escapeHtml(text) {
     var div = document.createElement('div');

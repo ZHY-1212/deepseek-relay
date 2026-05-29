@@ -45,6 +45,11 @@ registerRoute('#/chat', (container) => {
     }
 
     function render() {
+        // Preserve scroll position
+        var msgDiv = document.getElementById('chat-messages');
+        var scrollTop = msgDiv ? msgDiv.scrollTop : 0;
+        var wasAtBottom = msgDiv ? (msgDiv.scrollTop + msgDiv.clientHeight >= msgDiv.scrollHeight - 40) : true;
+
         const { recent, older } = getSplitMessages();
         const visible = showHistory ? messages : recent;
         const hiddenCount = messages.length - visible.length;
@@ -96,9 +101,10 @@ registerRoute('#/chat', (container) => {
                     </div>` : ''}
                     <div class="chat-input-row">
                         <input type="text" id="chat-input" placeholder="${pendingImage ? '描述这张图片...' : '输入消息，Enter 发送'}" autocomplete="off">
-                        <button type="button" class="btn-upload" id="btn-upload" title="上传图片">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                        </button>
+                        <div class="chat-toolbar">
+                            <button type="button" id="btn-upload" title="上传图片">🖼</button>
+                            <button type="button" id="btn-link" title="粘贴链接">🔗</button>
+                        </div>
                         <input type="file" id="file-input" accept="image/*" style="display:none">
                         <button type="submit" id="btn-send">发送</button>
                     </div>
@@ -136,11 +142,15 @@ registerRoute('#/chat', (container) => {
             </div>
         `;
 
-        setTimeout(() => {
-            const msgDiv = document.getElementById('chat-messages');
-            if (msgDiv) msgDiv.scrollTo({ top: msgDiv.scrollHeight, behavior: 'smooth' });
+        // Restore scroll position after render
+        setTimeout(function() {
+            var md = document.getElementById('chat-messages');
+            if (md) {
+                if (wasAtBottom) md.scrollTop = md.scrollHeight;
+                else md.scrollTop = Math.min(scrollTop, md.scrollHeight);
+            }
             document.getElementById('chat-input')?.focus();
-        }, 100);
+        }, 20);
 
         // Persist model selection
         document.getElementById('model-select').addEventListener('change', function() {
@@ -149,7 +159,15 @@ registerRoute('#/chat', (container) => {
         });
 
         document.getElementById('chat-form').addEventListener('submit', handleSend);
-        document.getElementById('btn-upload').addEventListener('click', () => document.getElementById('file-input').click());
+        document.getElementById('btn-upload').addEventListener('click', function() { document.getElementById('file-input').click(); });
+        document.getElementById('btn-link').addEventListener('click', function() {
+            var url = prompt('粘贴图片链接：');
+            if (url && url.trim()) {
+                pendingImage = { dataUrl: url.trim(), filename: 'link' };
+                render();
+                showToast('图片链接已添加', 'success');
+            }
+        });
         document.getElementById('file-input').addEventListener('change', handleFileSelect);
         if (pendingImage) document.getElementById('img-remove').addEventListener('click', handleRemoveImage);
 
