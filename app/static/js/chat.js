@@ -105,8 +105,31 @@ registerRoute('#/chat', (container) => {
                     <div class="chat-options">
                         <label><input type="checkbox" id="stream-toggle"> 流式</label>
                         <label>模型 <select id="model-select">
-                            <option value="deepseek-chat" ${selectedModel==='deepseek-chat'?'selected':''}>${modelIcons['deepseek-chat']} deepseek-chat</option>
-                            <option value="deepseek-reasoner" ${selectedModel==='deepseek-reasoner'?'selected':''}>${modelIcons['deepseek-reasoner']} deepseek-reasoner</option>
+                            <optgroup label="DeepSeek 官方">
+                                <option value="deepseek-chat" ${selectedModel==='deepseek-chat'?'selected':''}>deepseek-chat</option>
+                                <option value="deepseek-reasoner" ${selectedModel==='deepseek-reasoner'?'selected':''}>deepseek-reasoner</option>
+                            </optgroup>
+                            <optgroup label="硅基流动">
+                                <option value="deepseek-ai/DeepSeek-V3" ${selectedModel==='deepseek-ai/DeepSeek-V3'?'selected':''}>DeepSeek-V3</option>
+                                <option value="deepseek-ai/DeepSeek-R1" ${selectedModel==='deepseek-ai/DeepSeek-R1'?'selected':''}>DeepSeek-R1</option>
+                                <option value="Qwen/Qwen2.5-72B-Instruct" ${selectedModel==='Qwen/Qwen2.5-72B-Instruct'?'selected':''}>Qwen2.5-72B</option>
+                                <option value="zai-org/GLM-4.6" ${selectedModel==='zai-org/GLM-4.6'?'selected':''}>GLM-4.6</option>
+                            </optgroup>
+                            <optgroup label="阿里百炼">
+                                <option value="qwen-plus" ${selectedModel==='qwen-plus'?'selected':''}>通义千问-Plus</option>
+                                <option value="qwen-max" ${selectedModel==='qwen-max'?'selected':''}>通义千问-Max</option>
+                            </optgroup>
+                            <optgroup label="智谱AI">
+                                <option value="glm-4-plus" ${selectedModel==='glm-4-plus'?'selected':''}>GLM-4-Plus</option>
+                                <option value="glm-4-flash" ${selectedModel==='glm-4-flash'?'selected':''}>GLM-4-Flash</option>
+                            </optgroup>
+                            <optgroup label="豆包/火山方舟">
+                                <option value="doubao-pro-256k" ${selectedModel==='doubao-pro-256k'?'selected':''}>豆包-Pro</option>
+                                <option value="doubao-lite-128k" ${selectedModel==='doubao-lite-128k'?'selected':''}>豆包-Lite</option>
+                            </optgroup>
+                            <optgroup label="月之暗面Kimi">
+                                <option value="moonshot-v1-128k" ${selectedModel==='moonshot-v1-128k'?'selected':''}>Kimi-128K</option>
+                            </optgroup>
                         </select></label>
                     </div>
                 </form>

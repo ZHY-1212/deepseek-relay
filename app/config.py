@@ -7,6 +7,11 @@ class Settings(BaseSettings):
 
     secret_key: str = "change-me-in-production-use-a-random-secret"
     deepseek_api_key: str = "sk-your-deepseek-api-key"
+    siliconflow_api_key: str = ""
+    dashscope_api_key: str = ""
+    zhipu_api_key: str = ""
+    volcengine_api_key: str = ""
+    moonshot_api_key: str = ""
     data_dir: str = str(Path(__file__).parent.parent / "data")
     admin_email: str = "admin@example.com"
     cors_origins: list[str] = ["*"]

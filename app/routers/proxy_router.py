@@ -10,6 +10,20 @@ proxy_service = ProxyService()
 billing_service = BillingService()
 
 
+@router.get("/models")
+async def list_models():
+    from app.services.provider_registry import list_all_models
+    models = list_all_models()
+    result = []
+    for m in models:
+        result.append({
+            "id": m["model"],
+            "object": "model",
+            "owned_by": m["provider_name"],
+        })
+    return {"object": "list", "data": result}
+
+
 @router.post("/chat/completions")
 async def chat_completions(request: Request, body: ChatRequest):
     from app.main import user_store, usage_store, tier_store
