@@ -10,6 +10,45 @@ from app.models.order import Order
 router = APIRouter(prefix="/payment", tags=["支付"])
 
 
+class TopupRequest(BaseModel):
+    amount: float  # ¥
+
+
+@router.post("/topup")
+async def self_topup(request: Request, body: TopupRequest):
+    from app.main import user_store, order_store
+    user = get_current_user(request)
+
+    if body.amount <= 0:
+        raise HTTPException(status_code=400, detail="金额必须大于 0")
+
+    # ¥1 = 100 万 platform tokens
+    tokens = int(body.amount * 1000000)
+    user.balance_tokens += tokens
+    user.updated_at = datetime.now(timezone.utc).isoformat()
+    user_store.update(user)
+
+    # Record order
+    order = Order(
+        id=str(uuid4()),
+        user_id=user.id,
+        username=user.username,
+        tier="topup",
+        amount=body.amount,
+        status="paid",
+        created_at=datetime.now(timezone.utc).isoformat(),
+        paid_at=datetime.now(timezone.utc).isoformat(),
+    )
+    order_store.add(order)
+
+    return {
+        "message": "充值成功",
+        "amount": body.amount,
+        "tokens_added": tokens,
+        "new_balance": user.balance_tokens,
+    }
+
+
 class CreateOrderRequest(BaseModel):
     tier: str
 
