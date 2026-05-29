@@ -6,6 +6,8 @@ registerRoute('#/chat', function(container) {
     var selectedModel = localStorage.getItem('chat_model') || 'deepseek-chat';
     var userId = (JSON.parse(localStorage.getItem('user') || '{}')).id || 'anon';
     var STORAGE_KEY = 'chat_' + userId;
+    var visionModels = ['Qwen/Qwen2.5-VL-72B-Instruct'];
+    function isVisionModel(m) { return visionModels.indexOf(m) >= 0; }
     var H24 = 24 * 60 * 60 * 1000;
 
     function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(messages)); } catch(e) {} }
@@ -94,7 +96,7 @@ registerRoute('#/chat', function(container) {
             (pendingImage?'<div class="img-preview" id="img-preview"><img src="'+pendingImage.dataUrl+'" alt="预览"><button type="button" class="img-remove" id="img-remove">&times;</button></div>':'')+
             '<div class="chat-input-row">'+
             '<input type="text" id="chat-input" placeholder="'+(pendingImage?'描述这张图片...':'输入消息，Enter 发送')+'" autocomplete="off">'+
-            '<div class="chat-toolbar"><button type="button" id="btn-upload" title="上传图片">🖼</button><button type="button" id="btn-link" title="粘贴链接">🔗</button></div>'+
+            '<div class="chat-toolbar">'+(isVisionModel(selectedModel)?'<button type="button" id="btn-upload" title="上传图片">🖼</button><button type="button" id="btn-link" title="粘贴链接">🔗</button>':'')+'</div>'+
             '<input type="file" id="file-input" accept="image/*" style="display:none">'+
             '<button type="submit" id="btn-send">发送</button></div>'+
             '<div class="chat-options"><label><input type="checkbox" id="stream-toggle" checked> 流式</label><label>模型 <select id="model-select"><optgroup label="DeepSeek"><option value="deepseek-chat" '+(selectedModel==='deepseek-chat'?'selected':'')+'>deepseek-chat</option><option value="deepseek-reasoner" '+(selectedModel==='deepseek-reasoner'?'selected':'')+'>deepseek-reasoner</option></optgroup><optgroup label="硅基流动"><option value="deepseek-ai/DeepSeek-V3" '+(selectedModel==='deepseek-ai/DeepSeek-V3'?'selected':'')+'>DeepSeek-V3</option><option value="deepseek-ai/DeepSeek-R1" '+(selectedModel==='deepseek-ai/DeepSeek-R1'?'selected':'')+'>DeepSeek-R1</option><option value="Qwen/Qwen2.5-72B-Instruct" '+(selectedModel==='Qwen/Qwen2.5-72B-Instruct'?'selected':'')+'>Qwen2.5-72B</option><option value="zai-org/GLM-4.6" '+(selectedModel==='zai-org/GLM-4.6'?'selected':'')+'>GLM-4.6</option></optgroup><optgroup label="阿里百炼"><option value="qwen-plus" '+(selectedModel==='qwen-plus'?'selected':'')+'>通义千问-Plus</option><option value="qwen-max" '+(selectedModel==='qwen-max'?'selected':'')+'>通义千问-Max</option></optgroup><optgroup label="智谱AI"><option value="glm-4-plus" '+(selectedModel==='glm-4-plus'?'selected':'')+'>GLM-4-Plus</option><option value="glm-4-flash" '+(selectedModel==='glm-4-flash'?'selected':'')+'>GLM-4-Flash</option></optgroup><optgroup label="火山方舟"><option value="doubao-pro-256k" '+(selectedModel==='doubao-pro-256k'?'selected':'')+'>豆包-Pro</option><option value="doubao-lite-128k" '+(selectedModel==='doubao-lite-128k'?'selected':'')+'>豆包-Lite</option></optgroup><optgroup label="Kimi"><option value="moonshot-v1-128k" '+(selectedModel==='moonshot-v1-128k'?'selected':'')+'>Kimi-128K</option></optgroup></select></label></div></form></div>';

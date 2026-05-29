@@ -17,11 +17,15 @@ PROVIDERS = {
             "deepseek-ai/DeepSeek-V3",
             "deepseek-ai/DeepSeek-R1",
             "Qwen/Qwen2.5-72B-Instruct",
+            "Qwen/Qwen2.5-VL-72B-Instruct",
             "Qwen/Qwen2.5-7B-Instruct",
             "zai-org/GLM-4.6",
             "THUDM/glm-4-9b-chat",
         ],
     },
+    "vision_models": [
+        "Qwen/Qwen2.5-VL-72B-Instruct",  # SiliconFlow vision model
+    ],
     "dashscope": {
         "name": "阿里百炼",
         "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
