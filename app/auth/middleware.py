@@ -6,6 +6,7 @@ from app.store.user_store import UserStore
 
 PUBLIC_PATHS = {"/", "/app", "/health", "/auth/login", "/auth/register", "/docs", "/openapi.json", "/favicon.ico"}
 PUBLIC_V1 = {"/v1/models"}  # model list is public
+PUBLIC_PREFIXES = ("/payment/notify",)  # PayJS callback
 STATIC_PREFIXES = ("/static/",)
 
 
@@ -13,7 +14,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         path = request.url.path
 
-        if path in PUBLIC_PATHS or path in PUBLIC_V1 or path.startswith(STATIC_PREFIXES):
+        if path in PUBLIC_PATHS or path in PUBLIC_V1 or path.startswith(STATIC_PREFIXES) or path.startswith(PUBLIC_PREFIXES):
             return await call_next(request)
 
         auth_header = request.headers.get("Authorization", "")

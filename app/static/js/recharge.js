@@ -68,23 +68,68 @@ registerRoute('#/recharge', function(container) {
     async function doTopup(amount) {
         var msg = document.getElementById('topup-msg');
         msg.className = 'inline-msg';
-        msg.textContent = '充值中...';
+        msg.textContent = '创建订单中...';
         msg.style.display = 'block';
         try {
             var result = await api.post('/payment/topup', {amount: amount});
-            msg.className = 'inline-msg success';
-            msg.textContent = '充值成功！已到账 ¥'+amount+'（'+ (amount*100).toFixed(0) +' 万 Token）';
-            showToast('充值 ¥'+amount+' 成功！', 'success');
-            // Refresh balance display
+
+            if (result.method === 'wechat_qr') {
+                // Show QR code modal
+                showQrModal(result);
+                msg.className = 'inline-msg';
+                msg.style.display = 'none';
+            } else {
+                // Self-service mode — instant
+                msg.className = 'inline-msg success';
+                msg.textContent = '充值成功！已到账 ¥'+amount+'（'+ (amount*100).toFixed(0) +' 万 Token）';
+                showToast('充值 ¥'+amount+' 成功！', 'success');
+                refreshBalance();
+            }
+        } catch(e) {
+            msg.className = 'inline-msg error';
+            msg.textContent = '充值失败：' + e.message;
+        }
+    }
+
+    function showQrModal(result) {
+        var overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.id = 'qr-modal';
+        overlay.innerHTML = '<div class="modal-card"><div class="modal-header"><h3>微信扫码支付</h3><button class="modal-close" id="qr-close">&times;</button></div>'+
+            '<div class="modal-body" style="text-align:center">'+
+            '<div style="font-size:20px;font-weight:700;margin-bottom:12px">¥'+result.amount+'</div>'+
+            '<img src="'+result.qrcode+'" alt="支付二维码" style="width:220px;height:220px;border-radius:8px;border:1px solid var(--border)">'+
+            '<p style="font-size:13px;color:var(--text-secondary);margin-top:12px">请使用微信扫一扫支付</p>'+
+            '<p style="font-size:12px;color:var(--text-tertiary);margin-top:4px">支付成功后余额自动到账</p>'+
+            '<button class="btn-primary" style="width:100%;margin-top:16px" id="qr-done">我已完成支付</button></div></div>';
+        document.body.appendChild(overlay);
+
+        var close = function(){ var el=document.getElementById('qr-modal'); if(el)el.remove(); };
+        overlay.querySelector('#qr-close').addEventListener('click', close);
+        overlay.addEventListener('click', function(e){ if(e.target===overlay) close(); });
+        overlay.querySelector('#qr-done').addEventListener('click', function(){
+            close();
+            refreshBalance();
+            showToast('请等待支付确认，余额即将到账','success');
+        });
+
+        // Auto-refresh balance every 3 seconds for 30 seconds
+        var count = 0;
+        var timer = setInterval(async function(){
+            count++;
+            if (count > 10 || !document.getElementById('qr-modal')) { clearInterval(timer); return; }
+            await refreshBalance();
+        }, 3000);
+    }
+
+    async function refreshBalance() {
+        try {
             var p = await api.get('/dashboard/profile');
             localStorage.setItem('user', JSON.stringify(p.user));
             var money = (p.user.balance_tokens / 1000000).toFixed(2);
             var el = document.getElementById('balance-display');
             if (el) el.textContent = money;
-        } catch(e) {
-            msg.className = 'inline-msg error';
-            msg.textContent = '充值失败：' + e.message;
-        }
+        } catch(e) {}
     }
 
     load();

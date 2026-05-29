@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     zhipu_api_key: str = ""
     volcengine_api_key: str = ""
     moonshot_api_key: str = ""
+    payjs_mchid: str = ""
+    payjs_key: str = ""
+    payjs_notify_url: str = ""
     data_dir: str = str(Path(__file__).parent.parent / "data")
     admin_email: str = "admin@example.com"
     cors_origins: list[str] = ["*"]
