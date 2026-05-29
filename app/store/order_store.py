@@ -5,9 +5,19 @@ from app.models.order import Order
 class OrderStore:
     def __init__(self, store: JsonStore):
         self.store = store
+        self._ensure_list()
+
+    def _ensure_list(self):
+        data = self.store.read_all()
+        if not isinstance(data, list):
+            self.store.write_all([])
 
     def _all(self) -> list[Order]:
-        return [Order(**r) for r in self.store.read_all()]
+        data = self.store.read_all()
+        if not isinstance(data, list):
+            self._ensure_list()
+            return []
+        return [Order(**r) for r in data]
 
     def add(self, order: Order):
         def _do(data):
