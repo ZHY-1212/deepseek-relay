@@ -1,3 +1,10 @@
+// Shared utilities
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // Theme toggle
 const themeBtn = document.getElementById('btn-theme');
 const savedTheme = localStorage.getItem('theme') || 'light';
