@@ -278,9 +278,76 @@ registerRoute('#/chat', (container) => {
 
     function loadMessages() {
         try {
-            const raw = localStorage.getItem(STORAGE_KEY);
+            var raw = localStorage.getItem(STORAGE_KEY);
             if (raw) messages = JSON.parse(raw);
         } catch(e) { messages = []; }
+    }
+
+    function scrollToBottom() {
+        var md = document.getElementById('chat-messages');
+        if (md) requestAnimationFrame(function() { md.scrollTop = md.scrollHeight; });
+    }
+
+    function appendLastToDom() {
+        var md = document.getElementById('chat-messages');
+        if (!md) return;
+        var m = messages[messages.length - 1];
+        if (!m) return;
+        var div = document.createElement('div');
+        div.innerHTML = renderMessage(m, messages.length - 1);
+        var el = div.firstElementChild;
+        md.appendChild(el);
+        // Bind actions for this message
+        bindMessageActions(el, messages.length - 1);
+        scrollToBottom();
+    }
+
+    function bindMessageActions(el, idx) {
+        el.querySelectorAll('.btn-copy-msg').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                navigator.clipboard.writeText(btn.dataset.content).then(function() { showToast('已复制', 'success'); });
+            });
+        });
+        el.querySelectorAll('.btn-quote-msg').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var input = document.getElementById('chat-input');
+                input.value = '> ' + btn.dataset.content.split('\n').join('\n> ') + '\n\n';
+                input.focus();
+                showToast('已引用', 'success');
+            });
+        });
+        el.querySelectorAll('.btn-retry-msg').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (idx >= 0 && idx < messages.length && messages[idx].role === 'assistant') {
+                    messages.splice(idx, 1);
+                    var lastUser = messages.slice().reverse().find(function(m) { return m.role === 'user'; });
+                    if (lastUser) {
+                        saveMessages();
+                        var model = lastUser._model || 'deepseek-chat';
+                        var img = lastUser.image ? {dataUrl: lastUser.image} : null;
+                        // Remove from DOM
+                        var parent = el.parentNode;
+                        while (el.previousElementSibling && el.previousElementSibling.classList.contains('chat-msg')) {
+                            parent.removeChild(el.previousElementSibling);
+                        }
+                        parent.removeChild(el);
+                        if (document.getElementById('stream-toggle').checked) handleStream(model, img);
+                        else handleNormal(model, img);
+                        saveMessages();
+                    }
+                }
+            });
+        });
+        el.querySelectorAll('.thinking-header').forEach(function(h) {
+            h.addEventListener('click', function() {
+                var content = h.nextElementSibling;
+                content.style.display = content.style.display === 'none' ? 'block' : 'none';
+                h.classList.toggle('collapsed');
+            });
+        });
     }
 
     function clearMessages() {
@@ -584,7 +651,7 @@ registerRoute('#/chat', (container) => {
             messages.push({ role: 'user', content: displayText, tokens: 0, ts: Date.now(), _model: model });
         }
         saveMessages();
-        render();
+        appendLastToDom();
 
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (!user.api_key_prefix) {
@@ -597,7 +664,8 @@ registerRoute('#/chat', (container) => {
         if (useStream) { await handleStream(model, image); }
         else { await handleNormal(model, image); }
         saveMessages();
-        render();
+        // Don't re-render - messages already appended to DOM
+        scrollToBottom();
     }
 
     function buildMessages(image) {
@@ -624,8 +692,10 @@ registerRoute('#/chat', (container) => {
             const reasoning = msg.reasoning_content || '';
             const tokens = data.usage ? data.usage.total_tokens : 0;
             messages.push({ role: 'assistant', model: model, content: reply, reasoning: reasoning, tokens: tokens, ts: Date.now() });
+            appendLastToDom();
         } catch (err) {
             messages.push({ role: 'assistant', model: model, content: '错误：' + err.message, tokens: 0, ts: Date.now() });
+            appendLastToDom();
         }
     }
 
@@ -711,6 +781,7 @@ registerRoute('#/chat', (container) => {
             reasoning: fullReasoning || '',
             tokens: 0, ts: Date.now(),
         });
+        appendLastToDom();
     }
 
     loadMessages();
