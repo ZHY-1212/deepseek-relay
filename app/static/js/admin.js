@@ -69,7 +69,7 @@ registerRoute('#/admin', function(container) {
         } else if (currentTab === 'users') {
             area.innerHTML = '<div class="card" style="padding:0;overflow:hidden"><table class="data-table"><thead><tr><th>用户</th><th>邮箱</th><th>套餐</th><th>余额</th><th>消耗</th><th>请求</th><th>状态</th><th>操作</th></tr></thead><tbody>'+
                 data.users.map(function(u){
-                    return '<tr class="'+(u.is_banned?'banned':'')+'"><td>'+u.username+(u.is_admin?' ⭐':'')+'</td><td>'+u.email+'</td><td><span class="badge badge-'+u.tier+'">'+u.tier+'</span></td><td>'+u.balance.toLocaleString()+'</td><td>'+u.total_deducted.toLocaleString()+'</td><td>'+u.total_requests+'</td><td>'+(u.is_banned?'<span style="color:var(--red)">封禁</span>':'<span style="color:var(--green)">正常</span>')+'</td><td>'+(u.is_admin?'-':'<button class="btn-sm btn-ban" data-id="'+u.id+'" data-banned="'+u.is_banned+'">'+(u.is_banned?'解封':'封禁')+'</button> <select class="tier-select styled" data-id="'+u.id+'"><option value="free" '+(u.tier==='free'?'selected':'')+'>免费</option><option value="pro" '+(u.tier==='pro'?'selected':'')+'>专业</option><option value="vip" '+(u.tier==='vip'?'selected':'')+'>至尊</option></select>')+'</td></tr>';
+                    return '<tr class="'+(u.is_banned?'banned':'')+'"><td>'+u.username+(u.is_admin?' ⭐':'')+'</td><td>'+u.email+'</td><td><span class="badge badge-'+u.tier+'">'+u.tier+'</span></td><td>'+u.balance.toLocaleString()+'</td><td>'+u.total_deducted.toLocaleString()+'</td><td>'+u.total_requests+'</td><td>'+(u.is_banned?'<span style="color:var(--red)">封禁</span>':'<span style="color:var(--green)">正常</span>')+'</td><td><button class="btn-sm btn-ban" data-id="'+u.id+'" data-banned="'+u.is_banned+'">'+(u.is_banned?'解封':'封禁')+'</button> <button class="btn-sm btn-admin" data-id="'+u.id+'" style="margin:0 2px">'+(u.is_admin?'取消管理':'设管理')+'</button> <select class="tier-select styled" data-id="'+u.id+'"><option value="free" '+(u.tier==='free'?'selected':'')+'>免费</option><option value="pro" '+(u.tier==='pro'?'selected':'')+'>专业</option><option value="vip" '+(u.tier==='vip'?'selected':'')+'>至尊</option></select></td></tr>';
                 }).join('')+'</tbody></table></div>';
 
             area.querySelectorAll('.btn-ban').forEach(function(btn){
@@ -81,6 +81,12 @@ registerRoute('#/admin', function(container) {
             area.querySelectorAll('.tier-select').forEach(function(sel){
                 sel.addEventListener('change',async function(){
                     try { await api.put('/admin/users/'+sel.dataset.id+'/tier',{tier:sel.value}); showToast('套餐已更新','success'); await load(); }
+                    catch(e){ showToast(e.message,'error'); }
+                });
+            });
+            area.querySelectorAll('.btn-admin').forEach(function(btn){
+                btn.addEventListener('click',async function(){
+                    try { await api.put('/admin/users/'+btn.dataset.id+'/admin'); showToast('管理员状态已更新','success'); await load(); }
                     catch(e){ showToast(e.message,'error'); }
                 });
             });

@@ -30,8 +30,7 @@ async def register(req: RegisterRequest):
     user_id = str(uuid4())
     now = datetime.now(timezone.utc).isoformat()
 
-    # First user is admin
-    is_admin = user_store.count() == 0
+    is_admin = False
 
     initial_tokens = tier_store.get_tokens_per_month("free")
 

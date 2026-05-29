@@ -53,6 +53,21 @@ async def toggle_ban(user_id: str, request: Request):
     return {"id": user.id, "is_banned": user.is_banned}
 
 
+@router.put("/users/{user_id}/admin")
+async def toggle_admin(user_id: str, request: Request):
+    from app.main import user_store
+    admin = get_current_user(request)
+    if not admin.is_admin:
+        raise HTTPException(status_code=403, detail="需要管理员权限")
+    user = user_store.get_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在")
+    user.is_admin = not user.is_admin
+    user.updated_at = datetime.now(timezone.utc).isoformat()
+    user_store.update(user)
+    return {"id": user.id, "is_admin": user.is_admin}
+
+
 @router.put("/users/{user_id}/tier")
 async def change_tier(user_id: str, body: ChangeTierRequest, request: Request):
     from app.main import user_store, tier_store
