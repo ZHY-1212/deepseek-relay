@@ -12,6 +12,7 @@ router = APIRouter(prefix="/payment", tags=["支付"])
 
 class TopupRequest(BaseModel):
     amount: float
+    model: str = ""  # specific model to top up, empty = general balance
 
 
 @router.post("/topup")
@@ -26,11 +27,14 @@ async def create_topup(request: Request, body: TopupRequest):
         raise HTTPException(status_code=400, detail="金额必须大于 0")
 
     order_id = str(uuid4())
+    model_name = body.model or "通用余额"
+    desc = f"DS Relay 充值 {model_name} ¥{body.amount}"
     order = Order(
         id=order_id,
         user_id=user.id,
         username=user.username,
         tier="topup",
+        model=body.model or "",
         amount=body.amount,
         status="pending",
         created_at=datetime.now(timezone.utc).isoformat(),
@@ -38,12 +42,11 @@ async def create_topup(request: Request, body: TopupRequest):
     order_store.add(order)
 
     # Try PayJS
-    qr = await gateway.create_qrcode(body.amount, order_id, f"DS Relay 充值 ¥{body.amount}")
+    qr = await gateway.create_qrcode(body.amount, order_id, desc)
     if qr:
-        return {"order_id": order_id, "amount": body.amount, "qrcode": qr["qrcode"], "method": "wechat_qr"}
+        return {"order_id": order_id, "amount": body.amount, "model": body.model, "qrcode": qr["qrcode"], "method": "wechat_qr"}
 
-    # Manual: show admin QR code
-    return {"order_id": order_id, "amount": body.amount, "method": "manual", "message": "请扫码支付后等待管理员确认"}
+    return {"order_id": order_id, "amount": body.amount, "model": body.model, "method": "manual", "message": "请扫码支付后等待管理员确认"}
 
 
 @router.post("/notify")
@@ -118,9 +121,14 @@ async def confirm_order(order_id: str, request: Request):
         raise HTTPException(status_code=404, detail="用户不存在")
 
     if order.tier == "topup":
-        # Recharge order: add balance
+        # Recharge order: add to model-specific or general balance
         tokens = int(order.amount * 1000000)
-        user.balance_tokens += tokens
+        model = getattr(order, 'model', None) or ''
+        if model:
+            mb = dict(user.model_balances) if user.model_balances else {}
+            mb[model] = mb.get(model, 0) + tokens
+            user.model_balances = mb
+        user.balance_tokens += tokens  # always add to general too
     else:
         # Tier upgrade order
         tier_def = tier_store.get(order.tier)

@@ -3,66 +3,57 @@ registerRoute('#/recharge', function(container) {
         var user = JSON.parse(localStorage.getItem('user') || '{}');
         try { var p = await api.get('/dashboard/profile'); user = p.user; localStorage.setItem('user', JSON.stringify(user)); } catch(e) {}
 
-        var tokens = user.balance_tokens || 0;
-        var money = (tokens / 1000000).toFixed(2); // ¥1 = 100万 tokens
+        var generalBalance = user.balance_tokens || 0;
+        var modelBalances = user.model_balances || {};
+        var generalMoney = (generalBalance / 1000000).toFixed(2);
 
         var packages = [
-            {amt:5,label:'¥5',tokens:'500 万',desc:'入门体验'},
-            {amt:10,label:'¥10',tokens:'1000 万',desc:'轻度使用'},
-            {amt:20,label:'¥20',tokens:'2000 万',desc:'日常够用'},
-            {amt:50,label:'¥50',tokens:'5000 万',desc:'开发必备',badge:'推荐'},
-            {amt:100,label:'¥100',tokens:'1 亿',desc:'重度用户',badge:'最值'},
+            {amt:5,label:'¥5'},{amt:10,label:'¥10'},{amt:20,label:'¥20'},{amt:50,label:'¥50'},{amt:100,label:'¥100'}
         ];
 
         var models = [
-            {name:'DeepSeek Chat',rate:'3x',perYuan:'33 万'},
-            {name:'DeepSeek Reasoner',rate:'4x',perYuan:'25 万'},
-            {name:'Qwen / GLM',rate:'3.5x',perYuan:'29 万'},
-            {name:'豆包 / Flash',rate:'2x',perYuan:'50 万'},
-            {name:'Kimi 128K',rate:'3.5x',perYuan:'29 万'},
+            {id:'deepseek-chat',name:'DeepSeek Chat',icon:'DS',color:'#4f46e5'},
+            {id:'deepseek-reasoner',name:'DeepSeek Reasoner',icon:'DS',color:'#4f46e5'},
+            {id:'deepseek-ai/DeepSeek-V3',name:'DeepSeek V3 (硅基)',icon:'SF',color:'#7c3aed'},
+            {id:'deepseek-ai/DeepSeek-R1',name:'DeepSeek R1 (硅基)',icon:'SF',color:'#7c3aed'},
+            {id:'Qwen/Qwen2.5-72B-Instruct',name:'Qwen2.5 72B',icon:'QW',color:'#f97316'},
+            {id:'zai-org/GLM-4.6',name:'GLM-4.6',icon:'GL',color:'#2563eb'},
+            {id:'qwen-plus',name:'通义千问 Plus',icon:'QW',color:'#f97316'},
+            {id:'qwen-max',name:'通义千问 Max',icon:'QW',color:'#f97316'},
+            {id:'glm-4-plus',name:'GLM-4 Plus',icon:'GL',color:'#2563eb'},
+            {id:'glm-4-flash',name:'GLM-4 Flash',icon:'GL',color:'#2563eb'},
+            {id:'doubao-pro-256k',name:'豆包 Pro',icon:'DB',color:'#3370ff'},
+            {id:'doubao-lite-128k',name:'豆包 Lite',icon:'DB',color:'#3370ff'},
+            {id:'moonshot-v1-128k',name:'Kimi 128K',icon:'KM',color:'#6d28d9'},
         ];
 
         container.innerHTML =
-            '<div class="page-header"><h2>余额充值</h2><p>自助充值 · 即时到账 · 按量消费</p></div>'+
+            '<div class="page-header"><h2>余额充值</h2><p>各模型独立余额 · 按量消费 · 即时到账</p></div>'+
 
-            // Balance card - ¥ money
-            '<div class="stats-grid">'+
-            '<div class="stat-card"><div class="stat-label">账户余额</div><div class="stat-value" style="color:var(--green)">¥<span id="balance-display">'+money+'</span></div><span style="font-size:12px;color:var(--text-tertiary)">≈ '+(tokens/10000).toFixed(0)+' 万平台 Token</span></div>'+
-            '<div class="stat-card"><div class="stat-label">可调用 API</div><div class="stat-value" style="font-size:18px">≈ '+(tokens/30000).toFixed(0)+'<span style="font-size:14px;font-weight:500;color:var(--text-secondary)"> 万</span></div><span style="font-size:12px;color:var(--text-tertiary)">DeepSeek Chat API Token（3x）</span></div>'+
-            '</div>'+
+            // General balance
+            '<div class="stats-grid"><div class="stat-card"><div class="stat-label">通用余额</div><div class="stat-value" style="color:var(--accent)">¥<span id="gen-bal">'+generalMoney+'</span></div></div></div>'+
 
-            // Top-up buttons
-            '<div class="section-title">充值金额</div>'+
-            '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px">'+
+            // Per-model balances
+            '<div class="section-title">各模型余额</div>'+
+            '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:20px">'+
+            models.map(function(m){
+                var mb = modelBalances[m.id] || 0;
+                var mbMoney = (mb / 1000000).toFixed(2);
+                return '<div class="stat-card" style="padding:14px 16px;display:flex;align-items:center;gap:10px">'+
+                    '<span style="display:inline-block;width:24px;height:24px;border-radius:5px;background:'+m.color+';color:#fff;text-align:center;line-height:24px;font-size:10px;font-weight:700;flex-shrink:0">'+m.icon+'</span>'+
+                    '<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:550">'+m.name+'</div><div style="font-size:11px;color:var(--text-tertiary)">¥'+mbMoney+' ('+(mb/10000).toFixed(0)+'万)</div></div>'+
+                    '<button class="btn-sm" onclick="window.location.hash=\'#/pay/'+m.id+'/5\'" style="flex-shrink:0">充值</button></div>';
+            }).join('')+'</div>'+
+
+            // Quick top-up packages
+            '<div class="section-title">快速充值</div>'+
+            '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:14px">'+
             packages.map(function(p){
-                var badge = p.badge ? '<span style="position:absolute;top:8px;right:8px;background:var(--accent);color:#fff;font-size:10px;padding:1px 6px;border-radius:8px">'+p.badge+'</span>' : '';
-                return '<div class="stat-card" style="text-align:center;cursor:pointer;position:relative" id="topup-'+p.amt+'">'+badge+'<div style="font-size:22px;font-weight:700;margin-bottom:4px">'+p.label+'</div><div style="font-size:13px;color:var(--text-secondary)">'+p.tokens+' Token</div><div style="font-size:11px;color:var(--text-tertiary);margin-top:4px">'+p.desc+'</div></div>';
-            }).join('')+
-            '</div>'+
+                return '<div class="stat-card" style="text-align:center;cursor:pointer;padding:16px" onclick="window.location.hash=\'#/pay/general/'+p.amt+'\'"><div style="font-size:18px;font-weight:700">'+p.label+'</div><div style="font-size:11px;color:var(--text-tertiary)">通用余额</div></div>';
+            }).join('')+'</div>';
 
-            // Custom amount
-            '<div class="card" style="margin-bottom:20px"><div style="font-size:14px;font-weight:600;margin-bottom:10px">自定义金额</div>'+
-            '<div class="form-row"><input type="number" id="custom-amount" placeholder="输入金额（元）" min="1" step="1" style="flex:1"><button id="btn-custom">充值</button></div>'+
-            '<span id="topup-msg" class="inline-msg"></span></div>'+
-
-            // Per-model buying power
-            '<div class="section-title">¥1 能买多少 API Token</div>'+
-            '<div class="card" style="padding:0;overflow:hidden"><table class="pricing-table"><thead><tr><th>模型</th><th>加成</th><th>¥1 可得 API Token</th></tr></thead><tbody>'+
-            models.map(function(m){ return '<tr><td><strong>'+m.name+'</strong></td><td>'+m.rate+'</td><td style="font-weight:600">'+m.perYuan+' Token</td></tr>'; }).join('')+
-            '</tbody></table></div>'+
-
-            '<div style="text-align:center;margin-top:16px;font-size:12px;color:var(--text-tertiary)">余额永久有效 · 充值即时到账 · 按实际调用扣费</div>';
-
-        // Click top-up → navigate to payment page
-        packages.forEach(function(p){
-            var btn = document.getElementById('topup-'+p.amt);
-            if (btn) btn.addEventListener('click', function(){ window.location.hash = '#/pay/'+p.amt; });
-        });
-        document.getElementById('btn-custom').addEventListener('click', function(){
-            var amt = parseFloat(document.getElementById('custom-amount').value);
-            if (!amt || amt < 1) { showToast('请输入有效金额','error'); return; }
-            window.location.hash = '#/pay/'+amt;
-        });
+        // Refresh balance after returning from pay page
+        window._rechargeRefresh = function() { load(); };
     }
 
     load();

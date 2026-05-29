@@ -34,7 +34,7 @@ async def chat_completions(request: Request, body: ChatRequest):
     user = billing_service.check_and_replenish(user, tier_store, user_store)
 
     # Check quota
-    billing_service.check_quota(user, tier_store, usage_store)
+    billing_service.check_quota(user, body.model, tier_store, usage_store)
 
     body_dict = body.model_dump()
 

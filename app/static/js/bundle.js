@@ -584,66 +584,57 @@ registerRoute('#/recharge', function(container) {
         var user = JSON.parse(localStorage.getItem('user') || '{}');
         try { var p = await api.get('/dashboard/profile'); user = p.user; localStorage.setItem('user', JSON.stringify(user)); } catch(e) {}
 
-        var tokens = user.balance_tokens || 0;
-        var money = (tokens / 1000000).toFixed(2); // ¥1 = 100万 tokens
+        var generalBalance = user.balance_tokens || 0;
+        var modelBalances = user.model_balances || {};
+        var generalMoney = (generalBalance / 1000000).toFixed(2);
 
         var packages = [
-            {amt:5,label:'¥5',tokens:'500 万',desc:'入门体验'},
-            {amt:10,label:'¥10',tokens:'1000 万',desc:'轻度使用'},
-            {amt:20,label:'¥20',tokens:'2000 万',desc:'日常够用'},
-            {amt:50,label:'¥50',tokens:'5000 万',desc:'开发必备',badge:'推荐'},
-            {amt:100,label:'¥100',tokens:'1 亿',desc:'重度用户',badge:'最值'},
+            {amt:5,label:'¥5'},{amt:10,label:'¥10'},{amt:20,label:'¥20'},{amt:50,label:'¥50'},{amt:100,label:'¥100'}
         ];
 
         var models = [
-            {name:'DeepSeek Chat',rate:'3x',perYuan:'33 万'},
-            {name:'DeepSeek Reasoner',rate:'4x',perYuan:'25 万'},
-            {name:'Qwen / GLM',rate:'3.5x',perYuan:'29 万'},
-            {name:'豆包 / Flash',rate:'2x',perYuan:'50 万'},
-            {name:'Kimi 128K',rate:'3.5x',perYuan:'29 万'},
+            {id:'deepseek-chat',name:'DeepSeek Chat',icon:'DS',color:'#4f46e5'},
+            {id:'deepseek-reasoner',name:'DeepSeek Reasoner',icon:'DS',color:'#4f46e5'},
+            {id:'deepseek-ai/DeepSeek-V3',name:'DeepSeek V3 (硅基)',icon:'SF',color:'#7c3aed'},
+            {id:'deepseek-ai/DeepSeek-R1',name:'DeepSeek R1 (硅基)',icon:'SF',color:'#7c3aed'},
+            {id:'Qwen/Qwen2.5-72B-Instruct',name:'Qwen2.5 72B',icon:'QW',color:'#f97316'},
+            {id:'zai-org/GLM-4.6',name:'GLM-4.6',icon:'GL',color:'#2563eb'},
+            {id:'qwen-plus',name:'通义千问 Plus',icon:'QW',color:'#f97316'},
+            {id:'qwen-max',name:'通义千问 Max',icon:'QW',color:'#f97316'},
+            {id:'glm-4-plus',name:'GLM-4 Plus',icon:'GL',color:'#2563eb'},
+            {id:'glm-4-flash',name:'GLM-4 Flash',icon:'GL',color:'#2563eb'},
+            {id:'doubao-pro-256k',name:'豆包 Pro',icon:'DB',color:'#3370ff'},
+            {id:'doubao-lite-128k',name:'豆包 Lite',icon:'DB',color:'#3370ff'},
+            {id:'moonshot-v1-128k',name:'Kimi 128K',icon:'KM',color:'#6d28d9'},
         ];
 
         container.innerHTML =
-            '<div class="page-header"><h2>余额充值</h2><p>自助充值 · 即时到账 · 按量消费</p></div>'+
+            '<div class="page-header"><h2>余额充值</h2><p>各模型独立余额 · 按量消费 · 即时到账</p></div>'+
 
-            // Balance card - ¥ money
-            '<div class="stats-grid">'+
-            '<div class="stat-card"><div class="stat-label">账户余额</div><div class="stat-value" style="color:var(--green)">¥<span id="balance-display">'+money+'</span></div><span style="font-size:12px;color:var(--text-tertiary)">≈ '+(tokens/10000).toFixed(0)+' 万平台 Token</span></div>'+
-            '<div class="stat-card"><div class="stat-label">可调用 API</div><div class="stat-value" style="font-size:18px">≈ '+(tokens/30000).toFixed(0)+'<span style="font-size:14px;font-weight:500;color:var(--text-secondary)"> 万</span></div><span style="font-size:12px;color:var(--text-tertiary)">DeepSeek Chat API Token（3x）</span></div>'+
-            '</div>'+
+            // General balance
+            '<div class="stats-grid"><div class="stat-card"><div class="stat-label">通用余额</div><div class="stat-value" style="color:var(--accent)">¥<span id="gen-bal">'+generalMoney+'</span></div></div></div>'+
 
-            // Top-up buttons
-            '<div class="section-title">充值金额</div>'+
-            '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px">'+
+            // Per-model balances
+            '<div class="section-title">各模型余额</div>'+
+            '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:20px">'+
+            models.map(function(m){
+                var mb = modelBalances[m.id] || 0;
+                var mbMoney = (mb / 1000000).toFixed(2);
+                return '<div class="stat-card" style="padding:14px 16px;display:flex;align-items:center;gap:10px">'+
+                    '<span style="display:inline-block;width:24px;height:24px;border-radius:5px;background:'+m.color+';color:#fff;text-align:center;line-height:24px;font-size:10px;font-weight:700;flex-shrink:0">'+m.icon+'</span>'+
+                    '<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:550">'+m.name+'</div><div style="font-size:11px;color:var(--text-tertiary)">¥'+mbMoney+' ('+(mb/10000).toFixed(0)+'万)</div></div>'+
+                    '<button class="btn-sm" onclick="window.location.hash=\'#/pay/'+m.id+'/5\'" style="flex-shrink:0">充值</button></div>';
+            }).join('')+'</div>'+
+
+            // Quick top-up packages
+            '<div class="section-title">快速充值</div>'+
+            '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:14px">'+
             packages.map(function(p){
-                var badge = p.badge ? '<span style="position:absolute;top:8px;right:8px;background:var(--accent);color:#fff;font-size:10px;padding:1px 6px;border-radius:8px">'+p.badge+'</span>' : '';
-                return '<div class="stat-card" style="text-align:center;cursor:pointer;position:relative" id="topup-'+p.amt+'">'+badge+'<div style="font-size:22px;font-weight:700;margin-bottom:4px">'+p.label+'</div><div style="font-size:13px;color:var(--text-secondary)">'+p.tokens+' Token</div><div style="font-size:11px;color:var(--text-tertiary);margin-top:4px">'+p.desc+'</div></div>';
-            }).join('')+
-            '</div>'+
+                return '<div class="stat-card" style="text-align:center;cursor:pointer;padding:16px" onclick="window.location.hash=\'#/pay/general/'+p.amt+'\'"><div style="font-size:18px;font-weight:700">'+p.label+'</div><div style="font-size:11px;color:var(--text-tertiary)">通用余额</div></div>';
+            }).join('')+'</div>';
 
-            // Custom amount
-            '<div class="card" style="margin-bottom:20px"><div style="font-size:14px;font-weight:600;margin-bottom:10px">自定义金额</div>'+
-            '<div class="form-row"><input type="number" id="custom-amount" placeholder="输入金额（元）" min="1" step="1" style="flex:1"><button id="btn-custom">充值</button></div>'+
-            '<span id="topup-msg" class="inline-msg"></span></div>'+
-
-            // Per-model buying power
-            '<div class="section-title">¥1 能买多少 API Token</div>'+
-            '<div class="card" style="padding:0;overflow:hidden"><table class="pricing-table"><thead><tr><th>模型</th><th>加成</th><th>¥1 可得 API Token</th></tr></thead><tbody>'+
-            models.map(function(m){ return '<tr><td><strong>'+m.name+'</strong></td><td>'+m.rate+'</td><td style="font-weight:600">'+m.perYuan+' Token</td></tr>'; }).join('')+
-            '</tbody></table></div>'+
-
-            '<div style="text-align:center;margin-top:16px;font-size:12px;color:var(--text-tertiary)">余额永久有效 · 充值即时到账 · 按实际调用扣费</div>';
-
-        // Click top-up → navigate to payment page
-        packages.forEach(function(p){
-            var btn = document.getElementById('topup-'+p.amt);
-            if (btn) btn.addEventListener('click', function(){ window.location.hash = '#/pay/'+p.amt; });
-        });
-        document.getElementById('btn-custom').addEventListener('click', function(){
-            var amt = parseFloat(document.getElementById('custom-amount').value);
-            if (!amt || amt < 1) { showToast('请输入有效金额','error'); return; }
-            window.location.hash = '#/pay/'+amt;
-        });
+        // Refresh balance after returning from pay page
+        window._rechargeRefresh = function() { load(); };
     }
 
     load();
@@ -651,73 +642,68 @@ registerRoute('#/recharge', function(container) {
 });
 registerRoute('#/pay', function(container) {
     var amount = 0;
+    var modelId = '';
     var hash = window.location.hash;
-    var parts = hash.split('/');
-    if (parts.length > 2) amount = parseFloat(parts[2]) || 0;
+    var parts = hash.split('/'); // #/pay/MODEL/AMOUNT or #/pay/AMOUNT
+    if (parts.length >= 4) { modelId = parts[2]; amount = parseFloat(parts[3]) || 0; }
+    else if (parts.length >= 3) { amount = parseFloat(parts[2]) || 0; }
 
     if (!amount || amount < 1) {
         container.innerHTML = '<div style="text-align:center;padding:80px"><h2>无效金额</h2><p style="color:var(--text-secondary)"><a href="#/recharge" style="color:var(--accent)">返回充值</a></p></div>';
         return {unmount:function(){}};
     }
 
+    var modelLabel = (modelId && modelId !== 'general') ? modelId : '通用余额';
+
     async function load() {
         container.innerHTML = '<div style="text-align:center;padding:80px;color:var(--text-tertiary)">创建订单中...</div>';
 
         var result;
-        try { result = await api.post('/payment/topup', {amount: amount}); }
-        catch(e) { container.innerHTML = '<div style="text-align:center;padding:80px"><h2>订单创建失败</h2><p style="color:var(--red)">'+e.message+'</p><a href="#/recharge" style="color:var(--accent)">返回</a></div>'; return; }
-
-        // Get QR images
-        var wxQr = '', zfbQr = '';
-        if (result.method === 'wechat_qr') {
-            wxQr = result.qrcode;
-        } else {
-            try { var d = await api.get('/admin/payment-qr'); wxQr = d.wechat_qr || ''; zfbQr = d.alipay_qr || ''; } catch(e) {}
+        try {
+            var body = {amount: amount};
+            if (modelId && modelId !== 'general') body.model = modelId;
+            result = await api.post('/payment/topup', body);
+        } catch(e) {
+            container.innerHTML = '<div style="text-align:center;padding:80px"><h2>订单创建失败</h2><p style="color:var(--red)">'+e.message+'</p><a href="#/recharge" style="color:var(--accent)">返回</a></div>';
+            return;
         }
 
-        var tokenEstimate = (amount * 100).toFixed(0);
+        var wxQr = '', zfbQr = '';
+        if (result.method === 'wechat_qr') { wxQr = result.qrcode; }
+        else { try { var d = await api.get('/admin/payment-qr'); wxQr = d.wechat_qr || ''; zfbQr = d.alipay_qr || ''; } catch(e) {} }
 
         container.innerHTML =
             '<div style="max-width:520px;margin:40px auto">'+
-            '<a href="#/recharge" style="color:var(--text-secondary);font-size:13px;text-decoration:none">&larr; 返回充值</a>'+
+            '<a href="#/recharge" style="color:var(--text-secondary);font-size:13px;text-decoration:none">&larr; 返回</a>'+
             '<div class="card" style="margin-top:16px;text-align:center">'+
-            '<div style="font-size:14px;color:var(--text-secondary);margin-bottom:8px">支付金额</div>'+
+            '<div style="font-size:13px;color:var(--text-secondary);margin-bottom:4px">充值至 <strong>'+modelLabel+'</strong></div>'+
             '<div style="font-size:42px;font-weight:800;letter-spacing:-.04em;color:var(--accent);margin-bottom:4px">¥'+amount+'</div>'+
-            '<div style="font-size:14px;color:var(--text-secondary);margin-bottom:20px">≈ '+tokenEstimate+' 万平台 Token</div>'+
+            '<div style="font-size:14px;color:var(--text-secondary);margin-bottom:16px">≈ '+(amount*100).toFixed(0)+' 万 Token</div>'+
             '<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:16px">订单号：'+result.order_id.slice(0,8)+'…</div>'+
 
-            // Two payment buttons
             '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">'+
             (wxQr ? '<button class="pay-btn wx-btn" id="btn-wx-pay"><span style="font-size:20px">💬</span> 微信支付</button>' : '<button class="pay-btn" disabled>微信（未上传）</button>')+
             (zfbQr ? '<button class="pay-btn zfb-btn" id="btn-zfb-pay"><span style="font-size:20px">💙</span> 支付宝支付</button>' : '<button class="pay-btn" disabled>支付宝（未上传）</button>')+
             '</div>'+
-            '<p style="font-size:13px;color:var(--text-secondary);text-align:center;margin-bottom:12px">付款时请备注用户名</p>'+
-            '</div></div>';
+            '<p style="font-size:13px;color:var(--text-secondary)">付款时请备注用户名，管理员确认后到账</p></div></div>';
 
-        // Show QR modal
         function showQr(title, imgSrc) {
             var overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
             overlay.innerHTML = '<div class="modal-card"><div class="modal-header"><h3>'+title+'</h3><button class="modal-close">&times;</button></div>'+
                 '<div class="modal-body" style="text-align:center">'+
-                '<div style="font-size:20px;font-weight:700;color:var(--accent);margin-bottom:12px">¥'+amount+'</div>'+
+                '<div style="font-size:20px;font-weight:700;color:var(--accent);margin-bottom:12px">¥'+amount+' → '+modelLabel+'</div>'+
                 '<img src="'+imgSrc+'" style="width:220px;height:220px;border-radius:10px;border:1px solid var(--border);background:#fff">'+
                 '<p style="font-size:13px;color:var(--text-secondary);margin-top:14px">请扫码支付 ¥'+amount+'</p>'+
-                '<p style="font-size:12px;color:var(--text-tertiary)">付款时请备注用户名</p>'+
                 '<button class="btn-primary" style="width:100%;margin-top:14px" id="modal-paid">我已完成支付</button></div></div>';
             document.body.appendChild(overlay);
-            var close = function(){ overlay.remove(); };
-            overlay.querySelector('.modal-close').addEventListener('click', close);
-            overlay.addEventListener('click', function(e){ if(e.target===overlay) close(); });
-            overlay.querySelector('#modal-paid').addEventListener('click', function(){
-                close();
-                showToast('已通知管理员，确认后到账','success');
-                window.location.hash = '#/recharge';
-            });
+            overlay.querySelector('.modal-close').addEventListener('click',function(){overlay.remove()});
+            overlay.addEventListener('click',function(e){if(e.target===overlay)overlay.remove()});
+            overlay.querySelector('#modal-paid').addEventListener('click',function(){overlay.remove();showToast('已通知管理员','success');window.location.hash='#/recharge'});
         }
 
-        if (wxQr) document.getElementById('btn-wx-pay').addEventListener('click', function(){ showQr('微信支付', wxQr); });
-        if (zfbQr) document.getElementById('btn-zfb-pay').addEventListener('click', function(){ showQr('支付宝支付', zfbQr); });
+        if (wxQr) document.getElementById('btn-wx-pay').addEventListener('click',function(){showQr('微信支付',wxQr)});
+        if (zfbQr) document.getElementById('btn-zfb-pay').addEventListener('click',function(){showQr('支付宝支付',zfbQr)});
     }
 
     load();

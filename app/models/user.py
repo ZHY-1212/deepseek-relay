@@ -17,6 +17,7 @@ class User(BaseModel):
     api_key_prefix: str = ""
     tier: TierEnum = TierEnum.FREE
     balance_tokens: int = 0
+    model_balances: dict = {}  # {"deepseek-chat": 50000, "qwen-plus": 30000, ...}
     is_admin: bool = False
     is_banned: bool = False
     last_replenished_month: str = ""

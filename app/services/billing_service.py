@@ -39,7 +39,7 @@ class BillingService:
     def get_rate(self, model: str) -> float:
         return MODEL_RATES.get(model, DEFAULT_RATE)
 
-    def check_quota(self, user: User, tier_store, usage_store) -> None:
+    def check_quota(self, user: User, model: str, tier_store, usage_store) -> None:
         """Raise HTTPException if user exceeded limits."""
         tier = tier_store.get(user.tier.value)
         if not tier:
@@ -51,8 +51,10 @@ class BillingService:
             if today_count >= requests_per_day:
                 raise HTTPException(status_code=429, detail=f"今日请求次数已达上限（{requests_per_day}次），请明日再试")
 
-        if user.balance_tokens <= 0:
-            raise HTTPException(status_code=429, detail="余额不足，请前往充值页面充值")
+        # Check per-model balance
+        mb = user.model_balances.get(model, 0)
+        if mb <= 0 and user.balance_tokens <= 0:
+            raise HTTPException(status_code=429, detail=f"模型 {model} 余额不足，请前往充值页面充值")
 
     def check_and_replenish(self, user: User, tier_store, user_store) -> User:
         """Replenish tokens if it's a new month."""
@@ -66,10 +68,21 @@ class BillingService:
         return user
 
     def deduct(self, user: User, tokens: int, tokens_in: int, tokens_out: int, model: str, user_store, usage_store):
-        """Deduct platform tokens with model-specific markup."""
+        """Deduct platform tokens from model-specific balance first, then general."""
         rate = self.get_rate(model)
-        cost = int(tokens * rate)  # platform tokens to deduct
-        user.balance_tokens = max(0, user.balance_tokens - cost)
+        cost = int(tokens * rate)
+
+        # Deduct from model-specific balance first
+        mb = user.model_balances.get(model, 0)
+        if mb >= cost:
+            user.model_balances[model] = mb - cost
+        else:
+            # Model balance insufficient, use general balance
+            if mb > 0:
+                user.model_balances[model] = 0
+                cost -= mb
+            user.balance_tokens = max(0, user.balance_tokens - cost)
+
         user.updated_at = datetime.now(timezone.utc).isoformat()
         user_store.update(user)
 
