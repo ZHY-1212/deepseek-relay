@@ -28,23 +28,26 @@ function navigate() {
 
     if (currentPage && currentPage.unmount) { try { currentPage.unmount(); } catch(e) {} }
 
-    // Support parameterized routes like #/pay/10
+    // Support parameterized routes
     var renderFn = routes[hash];
     if (!renderFn) {
-        // Try prefix match
         Object.keys(routes).forEach(function(key) {
             if (hash.indexOf(key) === 0 && key !== '#/login') renderFn = routes[key];
         });
     }
-    app.innerHTML = '';
-    app.removeAttribute('style');
+
+    // Show loading immediately
+    app.innerHTML = '<div style="text-align:center;padding:60px 0;color:var(--text-tertiary);font-size:14px">加载中...</div>';
 
     if (renderFn) {
-        try { currentPage = renderFn(app); } catch(e) {
-            app.innerHTML = '<p style="color:var(--red);padding:40px">加载出错：' + e.message + '</p>';
-        }
+        // Use setTimeout to let the loading state render before heavy work
+        setTimeout(function() {
+            try { currentPage = renderFn(app); } catch(e) {
+                app.innerHTML = '<p style="color:var(--red);padding:40px">加载出错：'+e.message+'</p>';
+            }
+        }, 10);
     } else {
-        app.innerHTML = '<h2 style="text-align:center;padding:80px;color:var(--text-secondary)">404</h2>';
+        app.innerHTML = '<h2 style="text-align:center;padding:80px;color:var(--text-secondary)">页面不存在</h2>';
     }
 }
 

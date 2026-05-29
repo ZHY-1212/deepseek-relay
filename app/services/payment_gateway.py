@@ -54,4 +54,10 @@ class PayJSGateway:
         return self._sign(params) == sign
 
 
-gateway = PayJSGateway()
+_gateway = None
+
+def get_gateway():
+    global _gateway
+    if _gateway is None:
+        _gateway = PayJSGateway()
+    return _gateway

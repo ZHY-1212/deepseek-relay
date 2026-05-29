@@ -18,7 +18,8 @@ class TopupRequest(BaseModel):
 async def create_topup(request: Request, body: TopupRequest):
     """Create a top-up order. Shows QR code for manual payment."""
     from app.main import user_store, order_store
-    from app.services.payment_gateway import gateway
+    from app.services.payment_gateway import get_gateway
+    gateway = get_gateway()
 
     user = get_current_user(request)
     if body.amount <= 0:
@@ -49,7 +50,8 @@ async def create_topup(request: Request, body: TopupRequest):
 async def payjs_notify(request: Request):
     """PayJS payment callback. Adds balance on successful payment."""
     from app.main import user_store, order_store
-    from app.services.payment_gateway import gateway
+    from app.services.payment_gateway import get_gateway
+    gateway = get_gateway()
 
     try:
         params = dict(await request.form())
