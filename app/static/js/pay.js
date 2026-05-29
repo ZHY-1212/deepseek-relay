@@ -14,21 +14,28 @@ registerRoute('#/pay', function(container) {
     var modelLabel = (modelId && modelId !== 'general') ? modelId : '通用余额';
 
     async function load() {
-        container.innerHTML = '<div style="text-align:center;padding:80px;color:var(--text-tertiary)">创建订单中...</div>';
+        container.innerHTML = '<div style="text-align:center;padding:80px;color:var(--text-tertiary)">加载中...</div>';
 
-        var result;
-        try {
-            var body = {amount: amount};
-            if (modelId && modelId !== 'general') body.model = modelId;
-            result = await api.post('/payment/topup', body);
-        } catch(e) {
-            container.innerHTML = '<div style="text-align:center;padding:80px"><h2>订单创建失败</h2><p style="color:var(--red)">'+e.message+'</p><a href="#/recharge" style="color:var(--accent)">返回</a></div>';
+        // Run topup + QR fetch in parallel
+        var body = {amount: amount};
+        if (modelId && modelId !== 'general') body.model = modelId;
+
+        var cachedQr = localStorage.getItem('payment_qr_cache');
+        var qrData = cachedQr ? JSON.parse(cachedQr) : null;
+
+        var promises = [api.post('/payment/topup', body)];
+        if (!qrData) promises.push(api.get('/admin/payment-qr').then(function(d){qrData=d;localStorage.setItem('payment_qr_cache',JSON.stringify(d));return d}).catch(function(){return{}}));
+
+        var results = await Promise.allSettled(promises);
+        if (results[0].status === 'rejected') {
+            container.innerHTML = '<div style="text-align:center;padding:80px"><h2>订单创建失败</h2><p style="color:var(--red)">'+results[0].reason.message+'</p><a href="#/recharge" style="color:var(--accent)">返回</a></div>';
             return;
         }
 
+        var result = results[0].value;
         var wxQr = '', zfbQr = '';
         if (result.method === 'wechat_qr') { wxQr = result.qrcode; }
-        else { try { var d = await api.get('/admin/payment-qr'); wxQr = d.wechat_qr || ''; zfbQr = d.alipay_qr || ''; } catch(e) {} }
+        else if (qrData) { wxQr = qrData.wechat_qr || ''; zfbQr = qrData.alipay_qr || ''; }
 
         container.innerHTML =
             '<div style="max-width:520px;margin:40px auto">'+
