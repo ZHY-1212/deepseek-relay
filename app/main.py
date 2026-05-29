@@ -15,6 +15,7 @@ from app.store.user_store import UserStore
 from app.store.usage_store import UsageStore
 from app.store.tier_store import TierStore
 from app.store.order_store import OrderStore
+from app.store.settings_store import SettingsStore
 
 logging.basicConfig(
     level=logging.INFO,
@@ -26,17 +27,19 @@ user_store: UserStore
 usage_store: UsageStore
 tier_store: TierStore
 order_store: OrderStore
+settings_store: SettingsStore
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global user_store, usage_store, tier_store, order_store
+    global user_store, usage_store, tier_store, order_store, settings_store
     data = Path(settings.data_dir)
     data.mkdir(parents=True, exist_ok=True)
     user_store = UserStore(JsonStore(str(data / "users.json")))
     usage_store = UsageStore(JsonStore(str(data / "usage.json")))
     tier_store = TierStore(JsonStore(str(data / "tiers.json")))
     order_store = OrderStore(JsonStore(str(data / "orders.json")))
+    settings_store = SettingsStore(JsonStore(str(data / "settings.json")))
     logger.info("DeepSeek Relay started")
     yield
     # Graceful shutdown

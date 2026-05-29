@@ -88,19 +88,19 @@ async def platform_stats(request: Request):
 @router.post("/payment-qr")
 async def set_payment_qr(request: Request):
     """Admin uploads payment QR codes (wechat + alipay)."""
-    from app.main import tier_store
+    from app.main import settings_store
     body = await request.json()
-    qr_data = tier_store.get("payment") or {}
+    qr_data = settings_store.get("payment_qr", {})
     if "wechat_qr" in body: qr_data["wechat_qr"] = body["wechat_qr"]
     if "alipay_qr" in body: qr_data["alipay_qr"] = body["alipay_qr"]
-    tier_store.update("payment", qr_data)
+    settings_store.set("payment_qr", qr_data)
     return {"message": "收款码已更新"}
 
 
 @router.get("/payment-qr")
 async def get_payment_qr():
-    from app.main import tier_store
-    data = tier_store.get("payment") or {}
+    from app.main import settings_store
+    data = settings_store.get("payment_qr", {})
     return {"wechat_qr": data.get("wechat_qr", ""), "alipay_qr": data.get("alipay_qr", "")}
 
 
