@@ -3,6 +3,7 @@ registerRoute('#/chat', (container) => {
     let streaming = false;
     let pendingImage = null;
     let showHistory = false;
+    let selectedModel = localStorage.getItem('chat_model') || 'deepseek-chat';
 
     const STORAGE_KEY = 'chat_messages';
     const H24 = 24 * 60 * 60 * 1000;
@@ -102,8 +103,8 @@ registerRoute('#/chat', (container) => {
                     <div class="chat-options">
                         <label><input type="checkbox" id="stream-toggle" checked> 流式</label>
                         <label>模型 <select id="model-select">
-                            <option value="deepseek-chat">${modelIcons['deepseek-chat']} deepseek-chat</option>
-                            <option value="deepseek-reasoner">${modelIcons['deepseek-reasoner']} deepseek-reasoner</option>
+                            <option value="deepseek-chat" ${selectedModel==='deepseek-chat'?'selected':''}>${modelIcons['deepseek-chat']} deepseek-chat</option>
+                            <option value="deepseek-reasoner" ${selectedModel==='deepseek-reasoner'?'selected':''}>${modelIcons['deepseek-reasoner']} deepseek-reasoner</option>
                         </select></label>
                     </div>
                 </form>
@@ -115,6 +116,12 @@ registerRoute('#/chat', (container) => {
             if (msgDiv) msgDiv.scrollTo({ top: msgDiv.scrollHeight, behavior: 'smooth' });
             document.getElementById('chat-input')?.focus();
         }, 100);
+
+        // Persist model selection
+        document.getElementById('model-select').addEventListener('change', function() {
+            selectedModel = this.value;
+            localStorage.setItem('chat_model', selectedModel);
+        });
 
         document.getElementById('chat-form').addEventListener('submit', handleSend);
         document.getElementById('btn-upload').addEventListener('click', () => document.getElementById('file-input').click());
@@ -261,7 +268,7 @@ registerRoute('#/chat', (container) => {
 
         input.value = '';
         const useStream = document.getElementById('stream-toggle').checked;
-        const model = document.getElementById('model-select').value;
+        const model = selectedModel;
         const image = pendingImage;
         const displayText = content || '描述这张图片';
         pendingImage = null;
