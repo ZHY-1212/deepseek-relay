@@ -107,12 +107,3 @@ registerRoute('#/dashboard', function(container) {
     load();
     return {unmount:function(){}};
 });
-    var overlay = document.createElement('div');
-    overlay.className = 'modal-overlay';
-    overlay.id = 'payment-modal';
-    overlay.innerHTML = '<div class="modal-card"><div class="modal-header"><h3>升级至 '+tierName+'</h3><button class="modal-close" id="modal-close-btn">&times;</button></div><div class="modal-body" style="text-align:center"><div style="font-size:2.5rem;font-weight:700;margin-bottom:4px;color:var(--accent)">¥'+price+'</div><p style="color:var(--text-secondary);font-size:13px;margin-bottom:20px">订单号：'+order.order_id.slice(0,8)+'…</p><div style="background:var(--bg-hover);border-radius:var(--radius);padding:16px;margin-bottom:16px;font-size:13px;color:var(--text-secondary);text-align:left;line-height:1.8"><strong style="color:var(--text)">付款说明</strong><br>1. 前往「余额充值」页面充值<br>2. 或联系管理员获取收款码<br>3. 管理员确认后自动升级</div><p style="font-size:12px;color:var(--text-tertiary)">确认后请联系管理员</p></div></div>';
-    document.body.appendChild(overlay);
-    var close = function(){ var el=document.getElementById('payment-modal'); if(el)el.remove(); };
-    overlay.querySelector('#modal-close-btn').addEventListener('click', close);
-    overlay.addEventListener('click', function(e){ if(e.target===overlay) close(); });
-}
