@@ -1,9 +1,9 @@
 registerRoute('#/recharge', function(container) {
     var packages = [
-        {tokens:100000,price:10,bonus:0,label:'入门包',desc:'适合轻度体验',badge:''},
-        {tokens:500000,price:30,bonus:15,label:'基础包',desc:'个人日常使用',badge:'推荐'},
-        {tokens:2000000,price:50,bonus:33,label:'进阶包',desc:'开发者首选',badge:'最值'},
-        {tokens:5000000,price:100,bonus:50,label:'专业包',desc:'重度使用',badge:''},
+        {tokens:10000000,price:10,bonus:0,label:'入门包',desc:'适合轻度体验',badge:''},
+        {tokens:30000000,price:30,bonus:10,label:'基础包',desc:'个人日常使用',badge:'推荐'},
+        {tokens:50000000,price:50,bonus:20,label:'进阶包',desc:'开发者首选',badge:'最值'},
+        {tokens:100000000,price:100,bonus:30,label:'专业包',desc:'重度使用',badge:''},
     ];
 
     container.innerHTML =
@@ -29,7 +29,7 @@ registerRoute('#/recharge', function(container) {
                 '<div class="tier-icon">'+(p.bonus?'💎':'🪙')+'</div>'+
                 '<h3>'+p.label+'</h3>'+
                 '<div class="price">¥'+p.price+'</div>'+
-                '<div class="features"><div>◆ '+(p.tokens/10000).toFixed(0)+' 万 Token</div>'+
+                '<div class="features"><div>◆ '+(p.tokens/100000000).toFixed(1)+' 亿 Token</div>'+
                 (p.bonus?'<div style="color:var(--green)">◆ 赠送 '+p.bonus+'%</div>':'')+
                 '<div>◆ '+p.desc+'</div></div>'+
                 '<button onclick="window.location.hash=\'#/recharge\';showToast(\'请联系管理员充值\',\'success\')">立即充值</button>'+
