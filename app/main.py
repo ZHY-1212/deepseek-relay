@@ -66,9 +66,11 @@ from starlette.responses import Response
 class NoCacheStaticFiles(StaticFiles):
     async def get_response(self, path: str, scope) -> Response:
         response = await super().get_response(path, scope)
-        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-        response.headers["Pragma"] = "no-cache"
-        response.headers["Expires"] = "0"
+        # Versioned files (bundle.js, app.css) can be cached long
+        if 'bundle.js' in path:
+            response.headers["Cache-Control"] = "public, max-age=604800"  # 1 week
+        else:
+            response.headers["Cache-Control"] = "no-cache"
         return response
 
 static_dir = Path(__file__).parent / "static"
