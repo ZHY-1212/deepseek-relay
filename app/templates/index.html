@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DeepSeek Relay - AI API 平台</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%234f46e5'/></svg>">
+    <title>DS Relay — AI API 聚合平台</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%236366f1'/></svg>">
     <link rel="stylesheet" href="/static/css/app.css">
 </head>
 <body>
@@ -12,22 +12,24 @@
         <aside id="sidebar">
             <div class="sidebar-inner">
                 <div class="sidebar-top">
-                    <a href="#/dashboard" class="logo">DS Relay</a>
+                    <a href="#/dashboard" class="logo"><span class="logo-dot"></span>DS Relay</a>
                     <nav class="sidebar-nav">
-                        <a href="#/dashboard" class="nav-link">仪表盘</a>
-                        <a href="#/chat" class="nav-link">对话</a>
-                        <a href="#/docs" class="nav-link">文档</a>
-                        <a href="#/profile" class="nav-link">设置</a>
-                        <a href="#/admin" class="nav-link admin-only" style="display:none">管理</a>
+                        <a href="#/dashboard" class="nav-link"><span class="nav-icon">◫</span> 仪表盘</a>
+                        <a href="#/chat" class="nav-link"><span class="nav-icon">✦</span> AI 对话</a>
+                        <a href="#/history" class="nav-link"><span class="nav-icon">☰</span> 调用记录</a>
+                        <a href="#/docs" class="nav-link"><span class="nav-icon">⌸</span> API 文档</a>
+                        <a href="#/profile" class="nav-link"><span class="nav-icon">⚙</span> 个人设置</a>
+                        <a href="#/admin" class="nav-link admin-only" style="display:none"><span class="nav-icon">◈</span> 管理后台</a>
                     </nav>
                 </div>
                 <div class="sidebar-bottom">
+                    <button class="theme-btn" id="btn-theme"><span>◐</span> 切换主题</button>
                     <button class="btn-logout" id="btn-logout">退出登录</button>
                 </div>
             </div>
         </aside>
         <main id="app">
-            <div style="text-align:center;padding:80px 0;color:var(--text-tertiary)">加载中...</div>
+            <div style="text-align:center;padding:80px 0;color:var(--text-tertiary)">加载中…</div>
         </main>
     </div>
 
@@ -36,6 +38,7 @@
     <script src="/static/js/auth.js"></script>
     <script src="/static/js/dashboard.js"></script>
     <script src="/static/js/chat.js"></script>
+    <script src="/static/js/history.js"></script>
     <script src="/static/js/admin.js"></script>
     <script src="/static/js/docs.js"></script>
     <script src="/static/js/profile.js"></script>

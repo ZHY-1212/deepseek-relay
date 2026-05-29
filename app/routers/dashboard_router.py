@@ -43,6 +43,14 @@ async def upgrade(request: Request, req: UpgradeRequest):
     return StatsService.get_user_dashboard(user, user_store, usage_store)
 
 
+@router.get("/history")
+async def usage_history(request: Request, page: int = 1, size: int = 20, model: str = "", search: str = ""):
+    from app.main import usage_store
+    user = get_current_user(request)
+    result = usage_store.get_user_history(user.id, page=page, size=size, model=model, search=search)
+    return result
+
+
 @router.post("/reset-api-key")
 async def reset_api_key(request: Request):
     from app.main import user_store

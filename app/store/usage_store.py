@@ -75,6 +75,26 @@ class UsageStore:
             "last_7_days": last_7_days,
         }
 
+    def get_user_history(self, user_id: str, page: int = 1, size: int = 20, model: str = "", search: str = "") -> dict:
+        data = self._all()
+        records = [r for r in data if r["user_id"] == user_id]
+        if model:
+            records = [r for r in records if r.get("model", "") == model]
+        if search:
+            records = [r for r in records if search.lower() in r.get("endpoint", "").lower() or search.lower() in r.get("model", "").lower()]
+        records.sort(key=lambda r: r["timestamp"], reverse=True)
+        total = len(records)
+        total_pages = max(1, (total + size - 1) // size)
+        start = (page - 1) * size
+        page_records = records[start:start + size]
+        return {
+            "records": page_records,
+            "total": total,
+            "page": page,
+            "size": size,
+            "total_pages": total_pages,
+        }
+
     def get_platform_stats(self) -> dict:
         data = self._all()
         total_tokens = sum(r["tokens_consumed"] for r in data if r["success"])

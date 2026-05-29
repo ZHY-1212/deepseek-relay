@@ -1,17 +1,15 @@
 registerRoute('#/dashboard', (container) => {
     let profile = null;
-    let selectedTier = null;
 
     const tierNames = { free: '免费版', pro: '专业版', vip: '至尊版' };
-    const tierColors = { free: 'badge-free', pro: 'badge-pro', vip: 'badge-vip' };
+    const tierIcons = { free: '◯', pro: '◉', vip: '◆' };
 
     async function load() {
         try {
             profile = await api.get('/dashboard/profile');
-            selectedTier = profile.user.tier;
             localStorage.setItem('user', JSON.stringify(profile.user));
         } catch (e) {
-            container.innerHTML = `<p style="color:var(--danger)">加载失败：${e.message}</p>`;
+            container.innerHTML = `<p style="color:var(--red)">加载失败：${e.message}</p>`;
             return;
         }
         render();
@@ -21,148 +19,161 @@ registerRoute('#/dashboard', (container) => {
         const u = profile.user;
         const usage = profile.usage;
         const tierDefs = {
-            free: { tokens: 100000, reqs: 50, price: 0 },
-            pro: { tokens: 2000000, reqs: 500, price: 19.9 },
-            vip: { tokens: 10000000, reqs: '无限制', price: 49.9 },
+            free: { tokens: 100000, reqs: 50, price: 0, icon: '◯', desc: '试用体验' },
+            pro: { tokens: 2000000, reqs: 500, price: 19.9, icon: '◉', desc: '个人开发者' },
+            vip: { tokens: 10000000, reqs: '无限制', price: 49.9, icon: '◆', desc: '企业级用户' },
         };
-
         const currentTier = tierDefs[u.tier];
-        const pct = currentTier.tokens > 0 ? Math.min(100, (u.balance_tokens / currentTier.tokens) * 100) : 0;
-        const meterColor = pct > 60 ? '#10b981' : pct > 30 ? '#f59e0b' : '#ef4444';
+        const pct = Math.min(100, (u.balance_tokens / currentTier.tokens) * 100);
+        const meterColor = pct > 60 ? 'var(--green)' : pct > 30 ? 'var(--amber)' : 'var(--red)';
 
         const newApiKey = localStorage.getItem('new_api_key');
         if (newApiKey) {
-            setTimeout(() => {
-                showToast('你的 API Key（仅显示一次）：' + newApiKey, 'success');
-                localStorage.removeItem('new_api_key');
-            }, 500);
+            setTimeout(() => { showToast('API Key（仅显示一次）：' + newApiKey, 'success'); localStorage.removeItem('new_api_key'); }, 500);
         }
 
         container.innerHTML = `
-            <h2>仪表盘</h2>
+            <div class="page-header">
+                <h2>仪表盘</h2>
+                <p>欢迎回来，${u.username}</p>
+            </div>
+
             <div class="stats-grid">
-                <div class="card">
-                    <div class="card-header"><strong>API Key</strong> <span class="badge ${tierColors[u.tier]}">${tierNames[u.tier]}</span></div>
-                    <div class="api-key-display" title="点击复制">${u.api_key_prefix}</div>
-                    <div class="copy-hint">完整 Key 仅在创建时显示一次</div>
-                    <button class="btn-outline" id="btn-reset-key" style="margin-top:0.5rem;width:100%">重新生成</button>
-                </div>
-                <div class="card">
-                    <div class="card-header"><strong>Token 余额</strong></div>
-                    <div class="stat-card" style="box-shadow:none;border:none;padding:0;margin:0">
-                        <div class="value">${u.balance_tokens.toLocaleString()} <span style="font-size:0.8rem;font-weight:400;color:var(--text-muted)">/ ${currentTier.tokens.toLocaleString()}</span></div>
-                    </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-label">Token 余额</div>
+                    <div class="stat-value">${(u.balance_tokens / 1000).toFixed(1)}<span style="font-size:14px;font-weight:500;color:var(--text-secondary)">k</span></div>
                     <div class="meter"><div class="meter-fill" style="width:${pct}%;background:${meterColor}"></div></div>
-                    <small style="color:var(--text-muted)">本月剩余 Token</small>
+                    <div class="stat-sub">本月额度 / ${(currentTier.tokens/1000).toFixed(0)}k</div>
                 </div>
-                <div class="card">
-                    <div class="card-header"><strong>使用统计</strong></div>
-                    <div style="display:flex;justify-content:space-between;margin-top:0.5rem">
-                        <div style="text-align:center"><div style="font-size:1.4rem;font-weight:700">${usage.today_requests}</div><small style="color:var(--text-muted)">今日请求</small></div>
-                        <div style="text-align:center"><div style="font-size:1.4rem;font-weight:700">${usage.today_tokens.toLocaleString()}</div><small style="color:var(--text-muted)">今日 Token</small></div>
-                        <div style="text-align:center"><div style="font-size:1.4rem;font-weight:700">${usage.total_requests}</div><small style="color:var(--text-muted)">总计请求</small></div>
-                    </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-label">今日请求</div>
+                    <div class="stat-value">${usage.today_requests}</div>
+                    <div class="stat-sub">今日 Token：${usage.today_tokens.toLocaleString()}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-label">累计请求</div>
+                    <div class="stat-value">${usage.total_requests}</div>
+                    <div class="stat-sub">累计 Token：${usage.total_tokens.toLocaleString()}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">${tierIcons[u.tier]}</div>
+                    <div class="stat-label">当前套餐</div>
+                    <div class="stat-value" style="font-size:20px">${tierNames[u.tier]}</div>
+                    <div class="stat-sub">${currentTier.desc}</div>
                 </div>
             </div>
 
-            <div class="section-title">升级套餐</div>
+            <div class="section-title">📉 近 7 天用量趋势</div>
+            <div class="card">
+                ${buildChart(usage.last_7_days)}
+                <div class="chart-labels">${usage.last_7_days.map(d => `<span>${d.date.slice(5)}</span>`).join('')}</div>
+            </div>
+
+            <div class="section-title">${tierIcons[u.tier]} 升级套餐</div>
             <div class="tier-grid">
                 ${['free','pro','vip'].map(t => {
                     const d = tierDefs[t];
-                    const active = selectedTier === t ? 'active' : '';
                     const isCurrent = u.tier === t;
                     return `
-                    <div class="tier-card ${active}" id="tier-${t}">
+                    <div class="tier-card ${isCurrent ? 'active' : ''}" id="tier-${t}">
+                        <div class="tier-icon">${d.icon}</div>
                         <h3>${tierNames[t]}</h3>
-                        <div class="price">${d.price === 0 ? '免费' : '¥' + d.price + '/月'}</div>
-                        <p>${d.tokens.toLocaleString()} Token/月</p>
-                        <p>${typeof d.reqs === 'number' ? d.reqs.toLocaleString() : d.reqs} 请求/天</p>
-                        <button ${isCurrent ? 'disabled' : ''}>${isCurrent ? '当前套餐' : '立即升级'}</button>
+                        <div class="price">${d.price === 0 ? '免费' : '¥' + d.price}<span>/月</span></div>
+                        <div class="features">
+                            <div>◆ ${d.tokens.toLocaleString()} Token</div>
+                            <div>◆ ${typeof d.reqs === 'number' ? d.reqs.toLocaleString() : d.reqs} 请求/天</div>
+                            <div>◆ ${d.desc}</div>
+                        </div>
+                        <button ${isCurrent ? 'disabled' : ''} id="btn-upgrade-${t}">
+                            ${isCurrent ? '当前套餐' : '立即升级'}
+                        </button>
                     </div>`;
                 }).join('')}
             </div>
 
-            <div class="section-title">近 7 天用量</div>
-            <table style="width:100%;border-collapse:collapse;font-size:0.9rem">
-                <thead><tr style="color:var(--text-muted)"><th style="text-align:left;padding:0.5rem">日期</th><th style="text-align:right;padding:0.5rem">Token</th><th style="text-align:right;padding:0.5rem">请求数</th></tr></thead>
-                <tbody>
-                    ${usage.last_7_days.map(d => `
-                    <tr style="border-bottom:1px solid var(--border)"><td style="padding:0.5rem">${d.date}</td><td style="text-align:right;padding:0.5rem">${d.tokens.toLocaleString()}</td><td style="text-align:right;padding:0.5rem">${d.requests}</td></tr>
-                    `).join('')}
-                </tbody>
-            </table>
+            <div class="section-title">🔑 API Key
+                <span class="badge badge-${u.tier}" style="margin-left:8px">${tierNames[u.tier]}</span>
+            </div>
+            <div class="card">
+                <div class="api-key-display" title="点击复制">${u.api_key_prefix}</div>
+                <div style="display:flex;gap:8px;margin-top:12px;align-items:center">
+                    <span style="font-size:12px;color:var(--text-tertiary)">完整 Key 仅在创建时显示一次</span>
+                    <button class="btn-sm" id="btn-reset-key" style="margin-left:auto">重新生成</button>
+                </div>
+            </div>
         `;
 
-        document.querySelector('.api-key-display').addEventListener('click', function() {
+        // Chart bars hover
+        document.querySelectorAll('.chart-bar').forEach(bar => {
+            bar.addEventListener('mouseenter', function() { this.style.opacity = '1'; });
+            bar.addEventListener('mouseleave', function() { this.style.opacity = ''; });
+        });
+
+        // API key click
+        document.querySelector('.api-key-display')?.addEventListener('click', function() {
             navigator.clipboard.writeText(this.textContent).then(() => showToast('已复制', 'success'));
         });
-        document.getElementById('btn-reset-key').addEventListener('click', async () => {
-            if (!confirm('重新生成 API Key？旧 Key 将立即失效。')) return;
+
+        // Reset key
+        document.getElementById('btn-reset-key')?.addEventListener('click', async () => {
+            if (!confirm('重新生成后旧 Key 立即失效，确认？')) return;
             try {
                 const data = await api.post('/dashboard/reset-api-key');
-                showToast('新 API Key：' + data.api_key, 'success');
+                showToast('新 Key：' + data.api_key, 'success');
                 await load();
             } catch(e) { showToast(e.message, 'error'); }
         });
 
+        // Upgrade buttons
         ['free','pro','vip'].forEach(t => {
-            document.getElementById('tier-' + t).addEventListener('click', () => { selectedTier = t; render(); });
-            const btn = document.querySelector('#tier-' + t + ' button');
-            if (btn && !btn.disabled && t !== u.tier) {
+            const btn = document.getElementById('btn-upgrade-' + t);
+            if (btn && !btn.disabled) {
                 btn.addEventListener('click', async (e) => {
                     e.stopPropagation();
                     try {
-                        // Create order
                         const order = await api.post('/payment/create-order', { tier: t });
-                        const tierDef = tierDefs[t];
-                        showPaymentModal(order, tierNames[t], tierDef.price);
+                        showPaymentModal(order, tierNames[t], tierDefs[t].price);
                     } catch(er) { showToast(er.message, 'error'); }
                 });
             }
         });
     }
 
+    function buildChart(days) {
+        const maxVal = Math.max(1, ...days.map(d => d.tokens));
+        return '<div class="chart-bars">' + days.map(d => {
+            const h = Math.max(4, (d.tokens / maxVal) * 100);
+            return `<div class="chart-bar" style="height:${h}%;background:${d.tokens > 0 ? 'var(--accent)' : 'var(--border)'};opacity:${d.tokens > 0 ? '.65' : '.4'}"><span class="bar-tip">${d.tokens.toLocaleString()}</span></div>`;
+        }).join('') + '</div>';
+    }
+
     load();
     return { unmount() {} };
 });
 
-// Payment modal - shared across dashboard
+// Payment modal (shared)
 function showPaymentModal(order, tierName, price) {
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
     overlay.innerHTML = `
         <div class="modal-card">
-            <div class="modal-header">
-                <h3>升级至 ${tierName}</h3>
-                <button class="modal-close">&times;</button>
+            <div class="modal-header"><h3>升级至 ${tierName}</h3><button class="modal-close">&times;</button></div>
+            <div class="modal-body" style="text-align:center">
+                <div style="font-size:2.5rem;font-weight:700;margin-bottom:4px">¥${price}</div>
+                <p style="color:var(--text-secondary);font-size:13px;margin-bottom:20px">订单号：${order.order_id.slice(0,8)}…</p>
+                <div style="background:var(--bg-hover);border-radius:var(--radius);padding:16px;margin-bottom:16px;font-size:13px;color:var(--text-secondary);text-align:left;line-height:1.8">
+                    <strong style="color:var(--text)">📋 付款说明</strong><br>
+                    1. 联系管理员获取收款码<br>
+                    2. 付款时备注订单号<br>
+                    3. 管理员确认后自动升级
+                </div>
+                <p style="font-size:12px;color:var(--text-tertiary)">支付后请联系管理员确认</p>
             </div>
-            <div class="modal-body">
-                <div style="text-align:center;margin-bottom:1.5rem">
-                    <div style="font-size:2.5rem;font-weight:800;color:var(--blue);letter-spacing:-0.03em">¥${price}</div>
-                    <div style="color:var(--text-secondary);font-size:0.85rem">订单号：${order.order_id.slice(0,8)}...</div>
-                </div>
-                <div style="background:rgba(0,0,0,0.02);border-radius:var(--radius);padding:1rem;margin-bottom:1rem">
-                    <div style="font-weight:600;margin-bottom:0.5rem">付款方式</div>
-                    <p style="font-size:0.85rem;color:var(--text-secondary);margin:0">
-                        请使用支付宝或微信扫描下方二维码付款，<br>付款后在备注中填写订单号。
-                    </p>
-                </div>
-                <div style="text-align:center;padding:1rem;background:#fff;border-radius:var(--radius);border:1px solid rgba(0,0,0,0.06)">
-                    <div style="font-size:6rem;margin-bottom:0.5rem">💳</div>
-                    <p style="font-size:0.85rem;color:var(--text-secondary)">
-                        请联系管理员获取收款码<br>
-                        或等待管理员手动确认升级
-                    </p>
-                </div>
-                <p style="font-size:0.8rem;color:var(--text-secondary);text-align:center;margin-top:1rem">
-                    付款后请联系管理员确认，或等待自动确认
-                </p>
-            </div>
-        </div>
-    `;
+        </div>`;
     document.body.appendChild(overlay);
-
     overlay.querySelector('.modal-close').addEventListener('click', () => overlay.remove());
     overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
 }
-
