@@ -15,7 +15,9 @@ class JsonStore:
     def _ensure_file(self):
         self.filepath.parent.mkdir(parents=True, exist_ok=True)
         if not self.filepath.exists():
-            default = [] if "usage" in self.filepath.name else {}
+            # files that store lists
+            is_list = "usage" in self.filepath.name or "order" in self.filepath.name
+            default = [] if is_list else {}
             self._write_atomic(default)
 
     def _read(self) -> Any:
