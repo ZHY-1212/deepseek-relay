@@ -120,7 +120,21 @@ registerRoute('#/chat', function(container) {
         var f=e.target.files[0]; if(!f) return;
         if(!f.type.startsWith('image/')){showToast('请选择图片','error');return}
         if(f.size>20*1024*1024){showToast('图片不能超过20MB','error');return}
-        var r=new FileReader(); r.onload=function(){pendingImage={dataUrl:r.result,filename:f.name};render()}; r.readAsDataURL(f);
+        // Resize large images client-side before uploading
+        var reader=new FileReader();
+        reader.onload=function(ev){
+            var img=new Image();
+            img.onload=function(){
+                var maxW=1024,maxH=1024;
+                var w=img.width,h=img.height;
+                if(w>maxW||h>maxH){var ratio=Math.min(maxW/w,maxH/h);w=Math.round(w*ratio);h=Math.round(h*ratio)}
+                var canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+                var ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);
+                pendingImage={dataUrl:canvas.toDataURL('image/jpeg',0.85),filename:f.name};render();
+            };
+            img.src=ev.target.result;
+        };
+        reader.readAsDataURL(f);
     }
 
     async function handleSend(e) {
