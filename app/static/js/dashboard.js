@@ -21,6 +21,15 @@ registerRoute('#/dashboard', function(container) {
         var mc = pct>60?'var(--green)':pct>30?'var(--amber)':'var(--red)';
         var days = usage.last_7_days || [];
 
+        // Usage prediction
+        var avgDaily = 0;
+        if (days.length > 0) {
+            var total7 = days.reduce(function(s,d){return s+(d.tokens||0)},0);
+            avgDaily = Math.round(total7 / 7);
+        }
+        var daysLeft = avgDaily > 0 ? Math.round(u.balance_tokens / avgDaily) : '∞';
+        var predText = avgDaily > 0 ? '按近 7 天用量，余额预计可用 <strong>'+daysLeft+'</strong> 天' : '近 7 天无使用记录';
+
         var newKey = localStorage.getItem('new_api_key');
         if(newKey){setTimeout(function(){showToast('API Key（仅显示一次）：'+newKey,'success');localStorage.removeItem('new_api_key')},500)}
 
@@ -30,6 +39,7 @@ registerRoute('#/dashboard', function(container) {
             // Summary cards - DeepSeek style
             '<div class="stats-grid">'+
             '<div class="stat-card"><div class="stat-label">本月已用 Token</div><div class="stat-value">'+(usage.total_tokens||0).toLocaleString()+'</div><div class="meter"><div class="meter-fill" style="width:'+pct+'%;background:'+mc+'"></div></div><span style="font-size:12px;color:var(--text-tertiary)">剩余 '+u.balance_tokens.toLocaleString()+' / '+(ct.tokens).toLocaleString()+'</span></div>'+
+            '<div class="stat-card"><div class="stat-label">用量预测</div><div class="stat-value" style="font-size:18px">'+daysLeft+' <span style="font-size:13px;font-weight:500;color:var(--text-secondary)">天</span></div><span style="font-size:12px;color:var(--text-tertiary)">日均 '+avgDaily.toLocaleString()+' Token</span></div>'+
             '<div class="stat-card"><div class="stat-label">输入 Token</div><div class="stat-value">'+(usage.today_tokens_in||0).toLocaleString()+'</div><span style="font-size:12px;color:var(--text-tertiary)">累计 '+(usage.total_tokens_in||0).toLocaleString()+' · 今日</span></div>'+
             '<div class="stat-card"><div class="stat-label">输出 Token</div><div class="stat-value">'+(usage.today_tokens_out||0).toLocaleString()+'</div><span style="font-size:12px;color:var(--text-tertiary)">累计 '+(usage.total_tokens_out||0).toLocaleString()+' · 今日</span></div>'+
             '<div class="stat-card"><div class="stat-label">请求次数</div><div class="stat-value">'+(usage.today_requests||0)+'</div><span style="font-size:12px;color:var(--text-tertiary)">累计 '+(usage.total_requests||0)+' · 今日</span></div>'+

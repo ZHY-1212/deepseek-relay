@@ -3,8 +3,8 @@ from app.store.json_store import JsonStore
 TIER_DEFAULTS = {
     "free": {
         "name": "Free",
-        "tokens_per_month": 100_000,
-        "requests_per_day": 50,
+        "tokens_per_month": 200_000,
+        "requests_per_day": 100,
         "price": 0,
     },
     "pro": {

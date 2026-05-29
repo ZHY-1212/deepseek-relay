@@ -6,7 +6,7 @@ function registerRoute(hash, renderFn) { routes[hash] = renderFn; }
 function navigate() {
     var hash = window.location.hash || '#/login';
     var token = api.getToken();
-    var isPublic = hash === '#/login';
+    var isPublic = hash === '#/login' || hash === '#/welcome';
 
     // Detect session mismatch (another tab logged in as different user)
     if (token) {
@@ -20,7 +20,7 @@ function navigate() {
         }
     }
 
-    if (!token && !isPublic) { window.location.hash = '#/login'; return; }
+    if (!token && !isPublic) { window.location.hash = '#/welcome'; return; }
     if (token && isPublic) { window.location.hash = '#/models'; return; }
 
     var topnav = document.getElementById('topnav');
