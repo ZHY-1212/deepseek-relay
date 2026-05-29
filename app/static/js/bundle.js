@@ -183,6 +183,62 @@ registerRoute('#/models', function(container) {
     container.innerHTML = html;
     return {unmount:function(){}};
 });
+registerRoute('#/models-intro', function(container) {
+    var providers = [
+        {name:'DeepSeek 官方',url:'deepseek.com',color:'#4f46e5',icon:'DS',
+            desc:'DeepSeek 由深度求索公司开发，专注于通用人工智能。代码能力国产第一，全球开源模型排名前三。V3 系列支持 128K 上下文和多模态识别。',
+            models:[
+                {name:'deepseek-chat',desc:'通用旗舰模型，支持文本对话和图片识别。128K 上下文窗口，可一次处理整本小说。擅长代码生成、翻译、创意写作。适用场景：日常对话、编程助手、内容创作。',best:'代码生成、通用对话'},
+                {name:'deepseek-reasoner',desc:'深度推理模型，在数学、逻辑、编程竞赛中表现优异。会先进行内部推理再给出答案，思考过程可见。适用场景：数学题解、复杂逻辑、算法设计。',best:'数学推理、复杂逻辑'}
+            ]},
+        {name:'硅基流动 SiliconFlow',url:'siliconflow.cn',color:'#7c3aed',icon:'SF',
+            desc:'国内领先的 AI 模型聚合平台，托管 100+ 开源模型。提供国内直连低延迟服务，注册送 2000 万 Token。支持 OpenAI 兼容 API。',
+            models:[
+                {name:'DeepSeek V3/R1 (托管)',desc:'硅基流动托管的 DeepSeek 模型，性能与官方一致但延迟更低。适合需要国内高速访问的场景。',best:'国内低延迟'},
+                {name:'Qwen2.5 72B',desc:'阿里通义千问旗舰开源模型，720 亿参数。中文能力突出，在 C-Eval 中文评测中名列前茅。支持 128K 超长上下文。',best:'中文对话、长文本'},
+                {name:'GLM-4.6',desc:'智谱 AI 最新对话模型，响应速度极快。在通用对话和工具调用方面表现均衡，是综合性价比较高的选择。',best:'快速响应、工具调用'}
+            ]},
+        {name:'阿里百炼 DashScope',url:'dashscope.aliyun.com',color:'#f97316',icon:'QW',
+            desc:'阿里云推出的 AI 模型服务平台，通义千问系列旗舰。中文理解能力业界第一，数学推理能力国产最强。注册送百万 Token。',
+            models:[
+                {name:'qwen-plus',desc:'通义千问中端模型，性价比之选。日常对话流畅自然，中文语境理解优秀。128K 上下文，适合大部分通用场景。',best:'性价比、日常对话'},
+                {name:'qwen-max',desc:'通义千问旗舰模型，中文能力和数学推理均为国产第一。适合对质量要求极高的场景：学术论文、专业翻译、复杂分析。',best:'中文旗舰、学术写作'}
+            ]},
+        {name:'智谱 AI Zhipu',url:'open.bigmodel.cn',color:'#2563eb',icon:'GL',
+            desc:'智谱 AI 由清华大学团队创立，是国内最早的大模型公司之一。GLM 系列以响应速度快著称，首字延迟行业最低。',
+            models:[
+                {name:'glm-4-plus',desc:'智谱旗舰模型，在多项评测中表现优异。支持长文本理解和复杂推理。适用场景：企业级应用、专业写作。',best:'企业应用、长文本'},
+                {name:'glm-4-flash',desc:'智谱轻量模型，速度极快且免费。适合实时对话、客服机器人、简单问答等对延迟敏感的场景。',best:'极速响应、免费额度'}
+            ]},
+        {name:'火山方舟 Volcengine',url:'console.volcengine.com/ark',color:'#3370ff',icon:'DB',
+            desc:'字节跳动旗下 AI 平台，豆包系列以速度闻名。首字延迟 0.3 秒，生成速度 120 t/s，为业界最快。注册每月送 100 万 Token。',
+            models:[
+                {name:'doubao-pro-256k',desc:'字节旗舰模型，256K 超长上下文。可用于整本书级别的文档分析。中文优化，速度和效果兼具。',best:'超长上下文、极速'},
+                {name:'doubao-lite-128k',desc:'字节轻量模型，业界最快响应速度。适合需要实时交互的场景。每月有免费额度。',best:'极速免费、实时对话'}
+            ]},
+        {name:'月之暗面 Moonshot',url:'platform.moonshot.cn',color:'#6d28d9',icon:'KM',
+            desc:'月之暗面由清华杨植麟创立，专注于长文本处理。Kimi 以"长文本专家"著称，擅长文档分析和深度阅读。',
+            models:[
+                {name:'moonshot-v1-128k',desc:'Kimi 128K 长文本模型，可一次性处理整本小说或长篇报告。擅长摘要、问答、文档分析。适合阅读论文、分析合同、总结会议纪要。',best:'文档分析、深度阅读'}
+            ]}
+    ];
+
+    container.innerHTML =
+        '<div class="page-header"><h2>模型介绍</h2><p>了解各平台模型的能力、特点和最佳使用场景</p></div>'+
+        providers.map(function(prov){
+            return '<div class="section-title"><span style="display:inline-block;width:24px;height:24px;border-radius:6px;background:'+prov.color+';color:#fff;text-align:center;line-height:24px;font-size:11px;font-weight:700;margin-right:8px">'+prov.icon+'</span>'+prov.name+' <span style="font-weight:400;font-size:12px;color:var(--text-tertiary);margin-left:8px">'+prov.url+'</span></div>'+
+            '<div class="card" style="margin-bottom:8px"><p style="font-size:13.5px;color:var(--text-secondary);line-height:1.7;margin-bottom:14px">'+prov.desc+'</p>'+
+            prov.models.map(function(m){
+                return '<div style="background:var(--bg-hover);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px">'+
+                    '<div style="font-weight:650;margin-bottom:4px">'+m.name+'</div>'+
+                    '<p style="font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:6px">'+m.desc+'</p>'+
+                    '<span style="font-size:11px;background:var(--accent-subtle);color:var(--accent);padding:2px 8px;border-radius:4px">擅长：'+m.best+'</span></div>';
+            }).join('')+'</div>';
+        }).join('')+
+        '<p style="text-align:center;font-size:12px;color:var(--text-tertiary);margin-top:20px">信息来源于各模型官方文档，实际效果可能因版本更新而变化</p>';
+
+    return {unmount:function(){}};
+});
 registerRoute('#/dashboard', function(container) {
     var profile = null;
     var tierNames = {free:'免费版',pro:'专业版',vip:'至尊版'};
@@ -584,57 +640,43 @@ registerRoute('#/recharge', function(container) {
         var user = JSON.parse(localStorage.getItem('user') || '{}');
         try { var p = await api.get('/dashboard/profile'); user = p.user; localStorage.setItem('user', JSON.stringify(user)); } catch(e) {}
 
-        var generalBalance = user.balance_tokens || 0;
-        var modelBalances = user.model_balances || {};
-        var generalMoney = (generalBalance / 1000000).toFixed(2);
+        var balance = user.balance_tokens || 0;
+        var money = (balance / 1000000).toFixed(2);
 
-        var packages = [
-            {amt:5,label:'¥5'},{amt:10,label:'¥10'},{amt:20,label:'¥20'},{amt:50,label:'¥50'},{amt:100,label:'¥100'}
-        ];
-
-        var models = [
-            {id:'deepseek-chat',name:'DeepSeek Chat',icon:'DS',color:'#4f46e5'},
-            {id:'deepseek-reasoner',name:'DeepSeek Reasoner',icon:'DS',color:'#4f46e5'},
-            {id:'deepseek-ai/DeepSeek-V3',name:'DeepSeek V3 (硅基)',icon:'SF',color:'#7c3aed'},
-            {id:'deepseek-ai/DeepSeek-R1',name:'DeepSeek R1 (硅基)',icon:'SF',color:'#7c3aed'},
-            {id:'Qwen/Qwen2.5-72B-Instruct',name:'Qwen2.5 72B',icon:'QW',color:'#f97316'},
-            {id:'zai-org/GLM-4.6',name:'GLM-4.6',icon:'GL',color:'#2563eb'},
-            {id:'qwen-plus',name:'通义千问 Plus',icon:'QW',color:'#f97316'},
-            {id:'qwen-max',name:'通义千问 Max',icon:'QW',color:'#f97316'},
-            {id:'glm-4-plus',name:'GLM-4 Plus',icon:'GL',color:'#2563eb'},
-            {id:'glm-4-flash',name:'GLM-4 Flash',icon:'GL',color:'#2563eb'},
-            {id:'doubao-pro-256k',name:'豆包 Pro',icon:'DB',color:'#3370ff'},
-            {id:'doubao-lite-128k',name:'豆包 Lite',icon:'DB',color:'#3370ff'},
-            {id:'moonshot-v1-128k',name:'Kimi 128K',icon:'KM',color:'#6d28d9'},
+        var pkgs = [
+            {amt:5,tokens:'500万',badge:''},
+            {amt:10,tokens:'1000万',badge:''},
+            {amt:20,tokens:'2000万',badge:'推荐'},
+            {amt:50,tokens:'5000万',badge:'最值'},
+            {amt:100,tokens:'1亿',badge:''},
         ];
 
         container.innerHTML =
-            '<div class="page-header"><h2>余额充值</h2><p>各模型独立余额 · 按量消费 · 即时到账</p></div>'+
+            '<div class="page-header"><h2>余额充值</h2><p>统一余额 · 全模型通用 · 按量消费</p></div>'+
 
-            // General balance
-            '<div class="stats-grid"><div class="stat-card"><div class="stat-label">通用余额</div><div class="stat-value" style="color:var(--accent)">¥<span id="gen-bal">'+generalMoney+'</span></div></div></div>'+
+            '<div class="stats-grid"><div class="stat-card"><div class="stat-label">当前余额</div><div class="stat-value" style="color:var(--accent)">¥<span id="bal">'+money+'</span></div><span style="font-size:12px;color:var(--text-tertiary)">≈ '+(balance/10000).toFixed(0)+' 万 Token</span></div>'+
+            '<div class="stat-card"><div class="stat-label">可调用 API</div><div class="stat-value" style="font-size:18px">≈ '+(balance/30000).toFixed(0)+'<span style="font-size:14px;font-weight:500;color:var(--text-secondary)"> 万</span></div><span style="font-size:12px;color:var(--text-tertiary)">DeepSeek Chat（3x加成）</span></div></div>'+
 
-            // Per-model balances
-            '<div class="section-title">各模型余额</div>'+
-            '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:20px">'+
-            models.map(function(m){
-                var mb = modelBalances[m.id] || 0;
-                var mbMoney = (mb / 1000000).toFixed(2);
-                return '<div class="stat-card" style="padding:14px 16px;display:flex;align-items:center;gap:10px">'+
-                    '<span style="display:inline-block;width:24px;height:24px;border-radius:5px;background:'+m.color+';color:#fff;text-align:center;line-height:24px;font-size:10px;font-weight:700;flex-shrink:0">'+m.icon+'</span>'+
-                    '<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:550">'+m.name+'</div><div style="font-size:11px;color:var(--text-tertiary)">¥'+mbMoney+' ('+(mb/10000).toFixed(0)+'万)</div></div>'+
-                    '<button class="btn-sm" onclick="window.location.hash=\'#/pay/'+m.id+'/5\'" style="flex-shrink:0">充值</button></div>';
-            }).join('')+'</div>'+
-
-            // Quick top-up packages
             '<div class="section-title">快速充值</div>'+
             '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:14px">'+
-            packages.map(function(p){
-                return '<div class="stat-card" style="text-align:center;cursor:pointer;padding:16px" onclick="window.location.hash=\'#/pay/general/'+p.amt+'\'"><div style="font-size:18px;font-weight:700">'+p.label+'</div><div style="font-size:11px;color:var(--text-tertiary)">通用余额</div></div>';
-            }).join('')+'</div>';
+            pkgs.map(function(p){
+                var badge = p.badge ? '<span style="position:absolute;top:4px;right:4px;background:var(--accent);color:#fff;font-size:10px;padding:1px 6px;border-radius:8px">'+p.badge+'</span>' : '';
+                return '<div class="stat-card" style="text-align:center;cursor:pointer;padding:16px;position:relative" onclick="window.location.hash=\'#/pay/'+p.amt+'\'">'+badge+'<div style="font-size:18px;font-weight:700">¥'+p.amt+'</div><div style="font-size:11px;color:var(--text-tertiary)">'+p.tokens+' Token</div></div>';
+            }).join('')+'</div>'+
 
-        // Refresh balance after returning from pay page
-        window._rechargeRefresh = function() { load(); };
+            '<div class="card"><div style="font-size:14px;font-weight:600;margin-bottom:10px">自定义金额</div>'+
+            '<div class="form-row"><input type="number" id="custom-amt" placeholder="输入金额（元）" min="1"><button id="btn-custom">充值</button></div>'+
+            '<span id="topup-msg" class="inline-msg"></span></div>'+
+
+            '<div class="section-title">费率说明</div>'+
+            '<div class="card"><div style="line-height:2;font-size:13px;color:var(--text-secondary)">'+
+            '<p>通用余额可用于所有模型，不同模型消耗速率不同（3-4x加成）。详情见 <a href="#/models-intro" style="color:var(--accent)">模型介绍</a>。</p></div></div>';
+
+        document.getElementById('btn-custom').addEventListener('click',function(){
+            var amt = parseFloat(document.getElementById('custom-amt').value);
+            if (!amt || amt < 1) { showToast('请输入有效金额','error'); return; }
+            window.location.hash = '#/pay/'+amt;
+        });
     }
 
     load();
