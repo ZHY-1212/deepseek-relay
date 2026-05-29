@@ -26,9 +26,29 @@ async def list_models():
 
 @router.post("/chat/completions")
 async def chat_completions(request: Request, body: ChatRequest):
-    from app.main import user_store, usage_store, tier_store
+    from app.main import user_store, usage_store, tier_store, settings_store
 
     user = request.state.user
+
+    # IP whitelist check (for API key auth)
+    if request.state.auth_method == "api_key" and user.ip_whitelist:
+        client_ip = request.client.host if request.client else "unknown"
+        if client_ip not in user.ip_whitelist:
+            raise HTTPException(status_code=403, detail="IP 不在白名单中")
+
+    # Check if model is disabled
+    disabled = settings_store.get("disabled_models", [])
+    if body.model in disabled:
+        raise HTTPException(status_code=503, detail=f"模型 {body.model} 已下架")
+
+    # Per-model RPM check
+    model_rpm = settings_store.get("model_rpm", {})
+    rpm = model_rpm.get(body.model, 0)
+    if rpm > 0:
+        today_key = f"rpm_{user.id}_{body.model}"
+        count = usage_store.count_requests_today(today_key)
+        if count >= rpm:
+            raise HTTPException(status_code=429, detail=f"模型 {body.model} 每分钟限制 {rpm} 次，已达上限")
 
     # Replenish monthly tokens
     user = billing_service.check_and_replenish(user, tier_store, user_store)

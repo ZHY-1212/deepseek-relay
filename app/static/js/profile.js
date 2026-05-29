@@ -17,6 +17,7 @@ registerRoute('#/profile', (container) => {
             <div class="inline-tabs">
                 <button id="tab-info" class="${currentTab==='info'?'active':''}">账户信息</button>
                 <button id="tab-password" class="${currentTab==='password'?'active':''}">修改密码</button>
+                <button id="tab-ip" class="${currentTab==='ip'?'active':''}">IP 白名单</button>
             </div>
 
             <div id="profile-content"></div>
@@ -24,6 +25,7 @@ registerRoute('#/profile', (container) => {
 
         document.getElementById('tab-info').addEventListener('click', () => { currentTab='info'; render(); });
         document.getElementById('tab-password').addEventListener('click', () => { currentTab='password'; render(); });
+        document.getElementById('tab-ip').addEventListener('click', () => { currentTab='ip'; render(); });
         renderContent();
     }
 
@@ -86,6 +88,15 @@ registerRoute('#/profile', (container) => {
                     localStorage.setItem('user', JSON.stringify(profile.user));
                     render();
                 } catch(e) { showToast(e.message, 'error'); }
+            });
+
+        } else if (currentTab === 'ip') {
+            var ips = user.ip_whitelist || [];
+            area.innerHTML = '<div class="profile-section"><h3>IP 白名单</h3><div class="card"><p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">设置后只有白名单内的 IP 能调用 API。留空则不限制。</p><textarea id="ip-list" style="width:100%;min-height:80px;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--mono);background:var(--bg-input);color:var(--text)" placeholder="每行一个 IP，例如：&#10;1.2.3.4&#10;5.6.7.8">'+ips.join('\n')+'</textarea><button class="btn-primary" id="btn-save-ip" style="margin-top:10px">保存</button><span id="ip-msg" class="inline-msg"></span></div></div>';
+            document.getElementById('btn-save-ip').addEventListener('click',async function(){
+                var lines=document.getElementById('ip-list').value.split('\n').map(function(l){return l.trim()}).filter(function(l){return l});
+                try{await api.post('/admin/ip-whitelist',{ips:lines});showToast('已保存','success');
+                    var p=await api.get('/dashboard/profile');localStorage.setItem('user',JSON.stringify(p.user));}catch(e){showToast(e.message,'error')}
             });
 
         } else if (currentTab === 'password') {

@@ -5,10 +5,13 @@ registerRoute('#/dashboard', function(container) {
     async function load() {
         try { profile = await api.get('/dashboard/profile'); localStorage.setItem('user',JSON.stringify(profile.user)); }
         catch(e) { container.innerHTML = '<p style="color:var(--red);padding:40px">加载失败：'+e.message+'</p>'; return; }
-        render();
+        var anns = [];
+        try { anns = await api.get('/admin/announcements'); } catch(e) {}
+        render(anns);
     }
 
-    function render() {
+    function render(anns) {
+        anns = anns || [];
         var u = profile.user;
         var usage = profile.usage;
         var tierDefs = {
@@ -35,6 +38,10 @@ registerRoute('#/dashboard', function(container) {
 
         container.innerHTML =
             '<div class="page-header"><h2>控制台</h2><p>用量统计 · Token 消耗 · 套餐管理</p></div>'+
+            (anns.length > 0 ? '<div style="margin-bottom:20px">'+anns.map(function(a){
+                return '<div class="card" style="border-left:3px solid var(--blue);padding:14px 18px;margin-bottom:8px"><div style="font-weight:650;font-size:14px;margin-bottom:4px">📢 '+a.title+'</div><div style="font-size:13px;color:var(--text-secondary)">'+a.content+'</div></div>';
+            }).join('')+'</div>' : '')+
+            ''+
 
             // Summary cards - DeepSeek style
             '<div class="stats-grid">'+

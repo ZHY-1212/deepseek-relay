@@ -298,10 +298,13 @@ registerRoute('#/dashboard', function(container) {
     async function load() {
         try { profile = await api.get('/dashboard/profile'); localStorage.setItem('user',JSON.stringify(profile.user)); }
         catch(e) { container.innerHTML = '<p style="color:var(--red);padding:40px">加载失败：'+e.message+'</p>'; return; }
-        render();
+        var anns = [];
+        try { anns = await api.get('/admin/announcements'); } catch(e) {}
+        render(anns);
     }
 
-    function render() {
+    function render(anns) {
+        anns = anns || [];
         var u = profile.user;
         var usage = profile.usage;
         var tierDefs = {
@@ -328,6 +331,10 @@ registerRoute('#/dashboard', function(container) {
 
         container.innerHTML =
             '<div class="page-header"><h2>控制台</h2><p>用量统计 · Token 消耗 · 套餐管理</p></div>'+
+            (anns.length > 0 ? '<div style="margin-bottom:20px">'+anns.map(function(a){
+                return '<div class="card" style="border-left:3px solid var(--blue);padding:14px 18px;margin-bottom:8px"><div style="font-weight:650;font-size:14px;margin-bottom:4px">📢 '+a.title+'</div><div style="font-size:13px;color:var(--text-secondary)">'+a.content+'</div></div>';
+            }).join('')+'</div>' : '')+
+            ''+
 
             // Summary cards - DeepSeek style
             '<div class="stats-grid">'+
@@ -860,12 +867,14 @@ registerRoute('#/admin', function(container) {
             '<button id="tab-orders" class="'+(currentTab==='orders'?'active':'')+'">订单管理 '+(pendingOrders?'<span style="background:var(--red);color:#fff;border-radius:10px;padding:0 6px;font-size:11px;margin-left:4px">'+pendingOrders+'</span>':'')+'</button>'+
             '<button id="tab-tiers" class="'+(currentTab==='tiers'?'active':'')+'">套餐配置</button>'+
             '<button id="tab-qr" class="'+(currentTab==='qr'?'active':'')+'">收款设置</button>'+
+            '<button id="tab-announce" class="'+(currentTab==='announce'?'active':'')+'">公告管理</button>'+
+            '<button id="tab-models" class="'+(currentTab==='models'?'active':'')+'">模型管理</button>'+
             '</div>'+
             '<div id="admin-content"></div>';
 
         function switchTab(name) {
             currentTab = name;
-            ['overview','users','orders','tiers','qr'].forEach(function(t){
+            ['overview','users','orders','tiers','qr','announce','models'].forEach(function(t){
                 var btn = document.getElementById('tab-'+t);
                 if (btn) { btn.className = t === name ? 'active' : ''; }
             });
@@ -876,6 +885,8 @@ registerRoute('#/admin', function(container) {
         document.getElementById('tab-orders').addEventListener('click',function(){switchTab('orders')});
         document.getElementById('tab-tiers').addEventListener('click',function(){switchTab('tiers')});
         document.getElementById('tab-qr').addEventListener('click',function(){switchTab('qr')});
+        document.getElementById('tab-announce').addEventListener('click',function(){switchTab('announce')});
+        document.getElementById('tab-models').addEventListener('click',function(){switchTab('models')});
         renderContent();
     }
 
@@ -977,6 +988,50 @@ registerRoute('#/admin', function(container) {
             }
             doUpload(document.getElementById('wx-file'), document.getElementById('btn-wx'), document.getElementById('wx-preview'), 'wechat_qr');
             doUpload(document.getElementById('zfb-file'), document.getElementById('btn-zfb'), document.getElementById('zfb-preview'), 'alipay_qr');
+        } else if (currentTab === 'announce') {
+            area.innerHTML = '<div class="section-title">发布公告</div>'+
+                '<div class="card"><input id="ann-title" placeholder="标题" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--font);margin-bottom:8px;background:var(--bg-input);color:var(--text)"><textarea id="ann-content" placeholder="内容" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--font);min-height:80px;margin-bottom:8px;background:var(--bg-input);color:var(--text)"></textarea><button class="btn-primary" id="btn-post-ann">发布</button></div>'+
+                '<div id="ann-list"></div>';
+            document.getElementById('btn-post-ann').addEventListener('click',async function(){
+                var t=document.getElementById('ann-title').value.trim(),c=document.getElementById('ann-content').value.trim();
+                if(!t||!c){showToast('请填写标题和内容','error');return}
+                try{await api.post('/admin/announcements',{title:t,content:c});showToast('已发布','success');
+                    document.getElementById('ann-title').value='';document.getElementById('ann-content').value='';
+                    loadAnnList();}catch(e){showToast(e.message,'error')}
+            });
+            async function loadAnnList(){
+                try{var anns=await api.get('/admin/announcements');
+                    document.getElementById('ann-list').innerHTML=anns.length?'<div class="section-title">历史公告</div>'+anns.map(function(a){return '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><div><strong>'+a.title+'</strong><div style="font-size:12px;color:var(--text-tertiary)">'+a.created_at.slice(0,10)+'</div></div><button class="btn-sm" style="color:var(--red)" data-id="'+a.id+'" onclick="var self=this;api.request(\'DELETE\',\'/admin/announcements/'+a.id+'\').then(function(){self.parentElement.parentElement.remove()})">删除</button></div><div style="font-size:13px;color:var(--text-secondary);margin-top:4px">'+a.content+'</div></div>';}).join(''):'<p style="color:var(--text-tertiary)">暂无公告</p>';
+                }catch(e){}
+            }
+            loadAnnList();
+
+        } else if (currentTab === 'models') {
+            var models = ['deepseek-chat','deepseek-reasoner','deepseek-ai/DeepSeek-V3','deepseek-ai/DeepSeek-R1','Qwen/Qwen2.5-72B-Instruct','zai-org/GLM-4.6','qwen-plus','qwen-max','glm-4-plus','glm-4-flash','doubao-pro-256k','doubao-lite-128k','moonshot-v1-128k'];
+            async function loadModelSettings(){
+                try{
+                    var d=await api.get('/admin/disabled-models');
+                    var rpm=await api.get('/admin/model-rpm');
+                    var disabled=d.models||[];
+                    var html='<div class="section-title">模型管理</div><div class="card" style="padding:0;overflow:hidden"><table class="data-table"><thead><tr><th>模型</th><th>状态</th><th>RPM限制</th><th>操作</th></tr></thead><tbody>';
+                    models.forEach(function(m){
+                        var isOff=disabled.indexOf(m)>=0;
+                        var r=rpm[m]||0;
+                        html+='<tr><td>'+m+'</td><td>'+(isOff?'<span style="color:var(--red)">已下架</span>':'<span style="color:var(--green)">在线</span>')+'</td><td><input type="number" value="'+r+'" data-model="'+m+'" class="rpm-input" placeholder="0=不限" style="width:80px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px"></td><td><button class="btn-sm btn-toggle-model" data-model="'+m+'">'+(isOff?'上架':'下架')+'</button></td></tr>';
+                    });
+                    html+='</tbody></table></div>';
+                    area.innerHTML=html;
+                    document.querySelectorAll('.btn-toggle-model').forEach(function(b){b.addEventListener('click',async function(){
+                        try{await api.post('/admin/disabled-models',{model:this.dataset.model});showToast('已切换','success');loadModelSettings();}catch(e){showToast(e.message,'error')}
+                    })});
+                    document.querySelectorAll('.rpm-input').forEach(function(inp){inp.addEventListener('change',async function(){
+                        var v=parseInt(this.value)||0;
+                        try{await api.post('/admin/model-rpm',{model:this.dataset.model,rpm:v});showToast('RPM已更新','success')}catch(e){showToast(e.message,'error')}
+                    })});
+                }catch(e){}
+            }
+            loadModelSettings();
+
         } else if (currentTab === 'tiers') {
             var tiers = data.tiers || {};
             area.innerHTML = '<div class="stats-grid">'+
@@ -1130,6 +1185,7 @@ registerRoute('#/profile', (container) => {
             <div class="inline-tabs">
                 <button id="tab-info" class="${currentTab==='info'?'active':''}">账户信息</button>
                 <button id="tab-password" class="${currentTab==='password'?'active':''}">修改密码</button>
+                <button id="tab-ip" class="${currentTab==='ip'?'active':''}">IP 白名单</button>
             </div>
 
             <div id="profile-content"></div>
@@ -1137,6 +1193,7 @@ registerRoute('#/profile', (container) => {
 
         document.getElementById('tab-info').addEventListener('click', () => { currentTab='info'; render(); });
         document.getElementById('tab-password').addEventListener('click', () => { currentTab='password'; render(); });
+        document.getElementById('tab-ip').addEventListener('click', () => { currentTab='ip'; render(); });
         renderContent();
     }
 
@@ -1199,6 +1256,15 @@ registerRoute('#/profile', (container) => {
                     localStorage.setItem('user', JSON.stringify(profile.user));
                     render();
                 } catch(e) { showToast(e.message, 'error'); }
+            });
+
+        } else if (currentTab === 'ip') {
+            var ips = user.ip_whitelist || [];
+            area.innerHTML = '<div class="profile-section"><h3>IP 白名单</h3><div class="card"><p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">设置后只有白名单内的 IP 能调用 API。留空则不限制。</p><textarea id="ip-list" style="width:100%;min-height:80px;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--mono);background:var(--bg-input);color:var(--text)" placeholder="每行一个 IP，例如：&#10;1.2.3.4&#10;5.6.7.8">'+ips.join('\n')+'</textarea><button class="btn-primary" id="btn-save-ip" style="margin-top:10px">保存</button><span id="ip-msg" class="inline-msg"></span></div></div>';
+            document.getElementById('btn-save-ip').addEventListener('click',async function(){
+                var lines=document.getElementById('ip-list').value.split('\n').map(function(l){return l.trim()}).filter(function(l){return l});
+                try{await api.post('/admin/ip-whitelist',{ips:lines});showToast('已保存','success');
+                    var p=await api.get('/dashboard/profile');localStorage.setItem('user',JSON.stringify(p.user));}catch(e){showToast(e.message,'error')}
             });
 
         } else if (currentTab === 'password') {

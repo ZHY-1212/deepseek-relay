@@ -131,6 +131,80 @@ async def set_payment_qr(request: Request):
     return {"message": "收款码已更新"}
 
 
+# ── Announcements ──
+@router.post("/announcements")
+async def create_announcement(request: Request):
+    from app.main import settings_store
+    get_current_user(request)
+    body = await request.json()
+    anns = settings_store.get("announcements", [])
+    import uuid, datetime
+    ann = {"id": str(uuid.uuid4()), "title": body.get("title",""), "content": body.get("content",""), "created_at": datetime.datetime.utcnow().isoformat()}
+    anns.insert(0, ann)
+    if len(anns) > 20: anns = anns[:20]
+    settings_store.set("announcements", anns)
+    return {"message": "公告已发布", "id": ann["id"]}
+
+@router.delete("/announcements/{ann_id}")
+async def delete_announcement(ann_id: str, request: Request):
+    from app.main import settings_store
+    get_current_user(request)
+    anns = settings_store.get("announcements", [])
+    anns = [a for a in anns if a["id"] != ann_id]
+    settings_store.set("announcements", anns)
+    return {"message": "已删除"}
+
+@router.get("/announcements")
+async def get_announcements():
+    from app.main import settings_store
+    return settings_store.get("announcements", [])[:5]
+
+# ── Model Toggle ──
+@router.get("/disabled-models")
+async def get_disabled_models():
+    from app.main import settings_store
+    return {"models": settings_store.get("disabled_models", [])}
+
+@router.post("/disabled-models")
+async def toggle_model(request: Request):
+    from app.main import settings_store
+    get_current_user(request)
+    body = await request.json()
+    model = body.get("model", "")
+    disabled = settings_store.get("disabled_models", [])
+    if model in disabled: disabled.remove(model)
+    else: disabled.append(model)
+    settings_store.set("disabled_models", disabled)
+    return {"disabled_models": disabled}
+
+# ── Per-Model RPM ──
+@router.get("/model-rpm")
+async def get_model_rpm():
+    from app.main import settings_store
+    return settings_store.get("model_rpm", {})
+
+@router.post("/model-rpm")
+async def set_model_rpm(request: Request):
+    from app.main import settings_store
+    get_current_user(request)
+    body = await request.json()
+    rpm = settings_store.get("model_rpm", {})
+    rpm[body.get("model","")] = int(body.get("rpm", 0))
+    settings_store.set("model_rpm", rpm)
+    return {"model_rpm": rpm}
+
+# ── IP Whitelist (user setting) ──
+@router.post("/ip-whitelist")
+async def set_ip_whitelist(request: Request):
+    from app.main import user_store
+    import datetime
+    user = get_current_user(request)
+    body = await request.json()
+    user.ip_whitelist = body.get("ips", [])
+    user.updated_at = datetime.datetime.utcnow().isoformat()
+    user_store.update(user)
+    return {"ip_whitelist": user.ip_whitelist}
+
 @router.get("/payment-qr")
 async def get_payment_qr():
     from app.main import settings_store
