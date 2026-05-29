@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from app.config import settings
 
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE = timedelta(hours=24)
+ACCESS_TOKEN_EXPIRE = timedelta(days=7)
 
 
 def create_access_token(user_id: str, is_admin: bool = False) -> str:

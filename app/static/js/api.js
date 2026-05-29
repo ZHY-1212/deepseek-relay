@@ -24,6 +24,11 @@ const api = {
         const resp = await fetch(API_BASE + path, opts);
         const data = await resp.json().catch(() => ({}));
         if (!resp.ok) {
+            if (resp.status === 401 || resp.status === 500) {
+                this.clearToken();
+                window.location.hash = '#/login';
+                throw new Error('登录已过期，请重新登录');
+            }
             const msg = data.detail || data.message || `HTTP ${resp.status}`;
             throw new Error(msg);
         }
