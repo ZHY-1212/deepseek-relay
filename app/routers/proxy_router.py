@@ -59,14 +59,19 @@ async def chat_completions(request: Request, body: ChatRequest):
         )
     else:
         data = deepseek_resp.json()
-        tokens = data.get("usage", {}).get("total_tokens", 0)
+        usage_info = data.get("usage", {})
+        tokens = usage_info.get("total_tokens", 0)
+        tokens_in = usage_info.get("prompt_tokens", 0)
+        tokens_out = usage_info.get("completion_tokens", 0)
         if tokens > 0:
-            billing_service.deduct(user, tokens, body.model, user_store, usage_store)
+            billing_service.deduct(user, tokens, tokens_in, tokens_out, body.model, user_store, usage_store)
         return JSONResponse(content=data)
 
 
 async def _stream_with_billing(response, user, model):
     last_usage = 0
+    last_in = 0
+    last_out = 0
     try:
         async for chunk in response.aiter_bytes():
             yield chunk
@@ -77,18 +82,20 @@ async def _stream_with_billing(response, user, model):
                         if line.startswith("data: ") and "[DONE]" not in line:
                             try:
                                 obj = json.loads(line[6:])
-                                if "usage" in obj:
-                                    last_usage = obj["usage"].get("total_tokens", 0)
+                                usage_data = obj.get("usage", {})
+                                if "total_tokens" in usage_data:
+                                    last_usage = usage_data.get("total_tokens", 0)
+                                    last_in = usage_data.get("prompt_tokens", 0)
+                                    last_out = usage_data.get("completion_tokens", 0)
                             except Exception:
                                 pass
             except Exception:
                 pass
     except Exception:
-        # Stream interrupted — deduct whatever was consumed
         pass
 
     if last_usage > 0:
         from app.main import user_store, usage_store
         from app.services.billing_service import BillingService
         bs = BillingService()
-        bs.deduct(user, last_usage, model, user_store, usage_store)
+        bs.deduct(user, last_usage, last_in, last_out, model, user_store, usage_store)

@@ -33,7 +33,7 @@ class BillingService:
                 user_store.update(user)
         return user
 
-    def deduct(self, user: User, tokens: int, model: str, user_store, usage_store):
+    def deduct(self, user: User, tokens: int, tokens_in: int, tokens_out: int, model: str, user_store, usage_store):
         """Deduct tokens and record usage."""
         user.balance_tokens = max(0, user.balance_tokens - tokens)
         user.updated_at = datetime.now(timezone.utc).isoformat()
@@ -44,6 +44,8 @@ class BillingService:
             user_id=user.id,
             timestamp=datetime.now(timezone.utc).isoformat(),
             tokens_consumed=tokens,
+            tokens_in=tokens_in,
+            tokens_out=tokens_out,
             model=model,
             request_count=1,
             success=True,

@@ -40,21 +40,31 @@ class UsageStore:
     def get_user_stats(self, user_id: str) -> dict:
         data = self._all()
         total_tokens = 0
+        total_in = 0
+        total_out = 0
         total_requests = 0
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
         daily_tokens = defaultdict(int)
+        daily_in = defaultdict(int)
+        daily_out = defaultdict(int)
         daily_requests = defaultdict(int)
 
         for r in data:
             if r["user_id"] == user_id and r["success"]:
                 total_tokens += r["tokens_consumed"]
+                total_in += r.get("tokens_in", 0)
+                total_out += r.get("tokens_out", 0)
                 total_requests += 1
                 day = r["timestamp"][:10]
                 daily_tokens[day] += r["tokens_consumed"]
+                daily_in[day] += r.get("tokens_in", 0)
+                daily_out[day] += r.get("tokens_out", 0)
                 daily_requests[day] += 1
 
         today_tokens = daily_tokens.get(today, 0)
+        today_in = daily_in.get(today, 0)
+        today_out = daily_out.get(today, 0)
         today_requests = daily_requests.get(today, 0)
 
         last_7_days = []
@@ -64,13 +74,19 @@ class UsageStore:
             last_7_days.append({
                 "date": d,
                 "tokens": daily_tokens.get(d, 0),
+                "tokens_in": daily_in.get(d, 0),
+                "tokens_out": daily_out.get(d, 0),
                 "requests": daily_requests.get(d, 0),
             })
 
         return {
             "total_tokens": total_tokens,
+            "total_tokens_in": total_in,
+            "total_tokens_out": total_out,
             "total_requests": total_requests,
             "today_tokens": today_tokens,
+            "today_tokens_in": today_in,
+            "today_tokens_out": today_out,
             "today_requests": today_requests,
             "last_7_days": last_7_days,
         }
