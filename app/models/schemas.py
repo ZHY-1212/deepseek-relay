@@ -28,3 +28,8 @@ class UpgradeRequest(BaseModel):
 
 class ChangeTierRequest(BaseModel):
     tier: str
+
+
+class ChangePasswordRequest(BaseModel):
+    old_password: str
+    new_password: str

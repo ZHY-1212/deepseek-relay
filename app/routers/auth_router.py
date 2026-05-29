@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import bcrypt
 from fastapi import APIRouter, HTTPException, Request
 from app.models.user import User, UserPublic, TierEnum
-from app.models.schemas import RegisterRequest, LoginRequest
+from app.models.schemas import RegisterRequest, LoginRequest, ChangePasswordRequest
 from app.auth.jwt_handler import create_access_token
 from app.auth.api_key_handler import generate_api_key
 
@@ -103,3 +103,25 @@ async def reset_api_key(request: Request):
     user_store.update(user)
 
     return {"api_key": raw_key, "api_key_prefix": key_prefix}
+
+
+@router.post("/change-password")
+async def change_password(request: Request, body: ChangePasswordRequest):
+    from app.main import user_store
+    from app.dependencies import get_current_user
+
+    user = get_current_user(request)
+
+    if not bcrypt.checkpw(body.old_password.encode(), user.hashed_password.encode()):
+        raise HTTPException(status_code=400, detail="原密码错误")
+
+    if len(body.new_password) < 8:
+        raise HTTPException(status_code=400, detail="新密码至少 8 位")
+    if not any(c.isalpha() for c in body.new_password) or not any(c.isdigit() for c in body.new_password):
+        raise HTTPException(status_code=400, detail="新密码需包含字母和数字")
+
+    user.hashed_password = bcrypt.hashpw(body.new_password.encode(), bcrypt.gensalt()).decode()
+    user.updated_at = datetime.now(timezone.utc).isoformat()
+    user_store.update(user)
+
+    return {"message": "密码已修改"}
