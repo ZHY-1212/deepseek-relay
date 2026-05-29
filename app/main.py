@@ -143,4 +143,10 @@ async def root():
 
 @app.get("/app")
 async def spa(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    css_content = ""
+    css_path = Path(__file__).parent / "static" / "css" / "app.css"
+    try:
+        css_content = css_path.read_text(encoding="utf-8")
+    except Exception:
+        pass
+    return templates.TemplateResponse("index.html", {"request": request, "inline_css": css_content})
