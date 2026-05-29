@@ -5,10 +5,12 @@ function registerRoute(hash, renderFn) { routes[hash] = renderFn; }
 
 function navigate() {
     var hash = window.location.hash || '#/login';
-    // Normalize parameterized routes
+    // Normalize parameterized routes (longest match first to avoid #/models matching #/models-intro)
+    var bestKey = '';
     for (var k in routes) {
-        if (hash.indexOf(k) === 0 && k !== '#/login') { hash = k; break; }
+        if (hash.indexOf(k) === 0 && k.length > bestKey.length && k !== '#/login') { bestKey = k; }
     }
+    if (bestKey) hash = bestKey;
     var token = api.getToken();
     var isPublic = hash === '#/login' || hash === '#/welcome';
 
