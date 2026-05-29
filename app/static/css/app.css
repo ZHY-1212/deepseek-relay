@@ -242,6 +242,12 @@ select.styled{padding:8px 12px;border:1px solid var(--border);border-radius:8px;
 .btn-sm{padding:5px 12px;border:1px solid var(--border);border-radius:6px;font-size:12.5px;font-family:var(--font);cursor:pointer;background:var(--bg-card);color:var(--text-secondary);transition:all .12s var(--ease)}
 .btn-sm:hover{border-color:var(--accent);color:var(--accent)}
 
+/* Payment buttons */
+.pay-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:16px;border-radius:var(--radius-lg);border:2px solid var(--border);background:var(--bg-card);cursor:pointer;font-size:16px;font-weight:600;font-family:var(--font);color:var(--text);transition:all .15s var(--ease)}
+.pay-btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.wx-btn:hover{border-color:#07c160;background:rgba(7,193,96,.04)}
+.zfb-btn:hover{border-color:#1677ff;background:rgba(22,119,255,.04)}
+.pay-btn:disabled{opacity:.4;cursor:default;transform:none;box-shadow:none}
 /* Code */
 pre{background:var(--bg-hover);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;overflow-x:auto;font-size:13px;line-height:1.7;color:var(--text)}
 code{font-family:var(--mono);font-size:13px}
