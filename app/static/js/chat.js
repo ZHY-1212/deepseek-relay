@@ -108,9 +108,9 @@ registerRoute('#/chat', function(container) {
 
         // Event bindings
         document.getElementById('chat-form').addEventListener('submit', handleSend);
-        document.getElementById('btn-upload').addEventListener('click', function(){document.getElementById('file-input').click()});
-        document.getElementById('btn-link').addEventListener('click', function(){var u=prompt('粘贴图片链接：');if(u&&u.trim()){pendingImage={dataUrl:u.trim(),filename:'link'};render();showToast('图片链接已添加','success')}});
-        document.getElementById('file-input').addEventListener('change', handleFile);
+        var upBtn=document.getElementById('btn-upload'); if(upBtn) upBtn.addEventListener('click', function(){document.getElementById('file-input').click()});
+        var linkBtn=document.getElementById('btn-link'); if(linkBtn) linkBtn.addEventListener('click', function(){var u=prompt('粘贴图片链接：');if(u&&u.trim()){pendingImage={dataUrl:u.trim(),filename:'link'};render();showToast('图片链接已添加','success')}});
+        var fileInp=document.getElementById('file-input'); if(fileInp) fileInp.addEventListener('change', handleFile);
         if(pendingImage) document.getElementById('img-remove').addEventListener('click',function(){pendingImage=null;document.getElementById('file-input').value='';render()});
         document.getElementById('model-select').addEventListener('change',function(){selectedModel=this.value;localStorage.setItem('chat_model',selectedModel)});
         var lb = document.getElementById('btn-load-history'); if(lb) lb.addEventListener('click',function(){showHistory=true;render()});
