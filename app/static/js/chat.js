@@ -103,7 +103,7 @@ registerRoute('#/chat', (container) => {
                         <button type="submit" id="btn-send">发送</button>
                     </div>
                     <div class="chat-options">
-                        <label><input type="checkbox" id="stream-toggle" checked> 流式</label>
+                        <label><input type="checkbox" id="stream-toggle"> 流式</label>
                         <label>模型 <select id="model-select">
                             <option value="deepseek-chat" ${selectedModel==='deepseek-chat'?'selected':''}>${modelIcons['deepseek-chat']} deepseek-chat</option>
                             <option value="deepseek-reasoner" ${selectedModel==='deepseek-reasoner'?'selected':''}>${modelIcons['deepseek-reasoner']} deepseek-reasoner</option>
