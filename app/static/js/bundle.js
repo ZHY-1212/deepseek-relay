@@ -353,8 +353,6 @@ registerRoute('#/leaderboard', function(container) {
 });
 registerRoute('#/dashboard', function(container) {
     var profile = null;
-    var tierNames = {free:'免费版',pro:'专业版',vip:'至尊版'};
-
     async function load() {
         try { profile = await api.get('/dashboard/profile'); localStorage.setItem('user',JSON.stringify(profile.user)); }
         catch(e) { container.innerHTML = '<p style="color:var(--red);padding:40px">加载失败：'+e.message+'</p>'; return; }
@@ -417,23 +415,8 @@ registerRoute('#/dashboard', function(container) {
             '<div class="chart-labels" style="margin-top:8px">'+days.map(function(d){return '<span>'+d.date.slice(5)+'</span>'}).join('')+'</div>'+
             '</div></div></div>'+
 
-            // Tier cards
-            '<div class="section-title">套餐</div><div class="tier-grid">'+
-            ['free','pro','vip'].map(function(t){
-                var d=tierDefs[t]; var isC=u.tier===t;
-                return '<div class="tier-card'+(isC?' active':'')+'"><div class="tier-icon">'+d.icon+'</div><h3>'+tierNames[t]+'</h3><div class="price">'+(d.price===0?'免费':'¥'+d.price)+'<span>/月</span></div><div class="features"><div>◆ '+d.tokens.toLocaleString()+' Token/月</div><div>◆ '+(typeof d.reqs==='number'?d.reqs.toLocaleString():d.reqs)+' 请求/天</div><div>◆ '+d.desc+'</div></div><button '+(isC?'disabled':'id="btn-up-'+t+'"')+'>'+(isC?'当前套餐':'立即升级')+'</button></div>';
-            }).join('')+'</div>'+
-
             // API Key
             '<div class="section-title">API Key</div><div class="card"><div class="api-key-display">'+u.api_key_prefix+'</div><div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"><button class="btn-sm" id="btn-copy-curl">复制 curl</button><button class="btn-sm" id="btn-copy-py">复制 Python</button><button class="btn-sm" id="btn-reset-key" style="margin-left:auto">重新生成</button></div><div style="font-size:12px;color:var(--text-tertiary);margin-top:6px">完整 Key 仅创建时显示一次</div></div>';
-
-        // Upgrade buttons
-        ['free','pro','vip'].forEach(function(t){
-            var btn=document.getElementById('btn-up-'+t);
-            if(btn) btn.addEventListener('click',function(e){e.stopPropagation();
-                api.post('/payment/create-order',{tier:t}).then(function(o){showPaymentModal(o,tierNames[t],tierDefs[t].price)}).catch(function(e){showToast(e.message,'error')});
-            });
-        });
 
         var kd=container.querySelector('.api-key-display');
         if(kd) kd.addEventListener('click',function(){navigator.clipboard.writeText(this.textContent).then(function(){showToast('已复制','success')})});
@@ -477,8 +460,6 @@ registerRoute('#/dashboard', function(container) {
     load();
     return {unmount:function(){}};
 });
-
-function showPaymentModal(order, tierName, price) {
     var overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
     overlay.id = 'payment-modal';
@@ -1403,14 +1384,6 @@ registerRoute('#/profile', (container) => {
 registerRoute('#/pricing', function(container) {
     container.innerHTML =
         '<div class="page-header"><h2>计费规则与服务条款</h2><p>透明定价 · 按量计费 · 充值余额永久有效</p></div>'+
-
-        // Tier cards
-        '<div class="section-title">月费套餐</div>'+
-        '<div class="tier-grid">'+
-        '<div class="tier-card"><div class="tier-icon">◯</div><h3>免费版</h3><div class="price">免费</div><div class="features"><div>◆ 20万 Token/月</div><div>◆ 100 请求/天</div><div>◆ 全模型可用</div></div></div>'+
-        '<div class="tier-card"><div class="tier-icon">◉</div><h3>专业版</h3><div class="price">¥19.9<span>/月</span></div><div class="features"><div>◆ 200万 Token/月</div><div>◆ 500 请求/天</div><div>◆ 充值额外送 10%</div></div></div>'+
-        '<div class="tier-card"><div class="tier-icon">◆</div><h3>至尊版</h3><div class="price">¥49.9<span>/月</span></div><div class="features"><div>◆ 1000万 Token/月</div><div>◆ 请求无限制</div><div>◆ 充值额外送 25%</div></div></div>'+
-        '</div>'+
 
         // Per-model pricing
         '<div class="section-title">模型费率 <span style="font-size:12px;color:var(--text-tertiary);font-weight:400">（平台 Token / 百万 API Token）</span></div>'+

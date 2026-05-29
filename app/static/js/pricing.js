@@ -2,14 +2,6 @@ registerRoute('#/pricing', function(container) {
     container.innerHTML =
         '<div class="page-header"><h2>计费规则与服务条款</h2><p>透明定价 · 按量计费 · 充值余额永久有效</p></div>'+
 
-        // Tier cards
-        '<div class="section-title">月费套餐</div>'+
-        '<div class="tier-grid">'+
-        '<div class="tier-card"><div class="tier-icon">◯</div><h3>免费版</h3><div class="price">免费</div><div class="features"><div>◆ 20万 Token/月</div><div>◆ 100 请求/天</div><div>◆ 全模型可用</div></div></div>'+
-        '<div class="tier-card"><div class="tier-icon">◉</div><h3>专业版</h3><div class="price">¥19.9<span>/月</span></div><div class="features"><div>◆ 200万 Token/月</div><div>◆ 500 请求/天</div><div>◆ 充值额外送 10%</div></div></div>'+
-        '<div class="tier-card"><div class="tier-icon">◆</div><h3>至尊版</h3><div class="price">¥49.9<span>/月</span></div><div class="features"><div>◆ 1000万 Token/月</div><div>◆ 请求无限制</div><div>◆ 充值额外送 25%</div></div></div>'+
-        '</div>'+
-
         // Per-model pricing
         '<div class="section-title">模型费率 <span style="font-size:12px;color:var(--text-tertiary);font-weight:400">（平台 Token / 百万 API Token）</span></div>'+
         '<div class="card" style="padding:0;overflow:hidden"><table class="pricing-table"><thead><tr><th>平台</th><th>模型</th><th>输入</th><th>输出</th><th>倍数</th></tr></thead><tbody>'+

@@ -1,7 +1,5 @@
 registerRoute('#/dashboard', function(container) {
     var profile = null;
-    var tierNames = {free:'免费版',pro:'专业版',vip:'至尊版'};
-
     async function load() {
         try { profile = await api.get('/dashboard/profile'); localStorage.setItem('user',JSON.stringify(profile.user)); }
         catch(e) { container.innerHTML = '<p style="color:var(--red);padding:40px">加载失败：'+e.message+'</p>'; return; }
@@ -64,23 +62,8 @@ registerRoute('#/dashboard', function(container) {
             '<div class="chart-labels" style="margin-top:8px">'+days.map(function(d){return '<span>'+d.date.slice(5)+'</span>'}).join('')+'</div>'+
             '</div></div></div>'+
 
-            // Tier cards
-            '<div class="section-title">套餐</div><div class="tier-grid">'+
-            ['free','pro','vip'].map(function(t){
-                var d=tierDefs[t]; var isC=u.tier===t;
-                return '<div class="tier-card'+(isC?' active':'')+'"><div class="tier-icon">'+d.icon+'</div><h3>'+tierNames[t]+'</h3><div class="price">'+(d.price===0?'免费':'¥'+d.price)+'<span>/月</span></div><div class="features"><div>◆ '+d.tokens.toLocaleString()+' Token/月</div><div>◆ '+(typeof d.reqs==='number'?d.reqs.toLocaleString():d.reqs)+' 请求/天</div><div>◆ '+d.desc+'</div></div><button '+(isC?'disabled':'id="btn-up-'+t+'"')+'>'+(isC?'当前套餐':'立即升级')+'</button></div>';
-            }).join('')+'</div>'+
-
             // API Key
             '<div class="section-title">API Key</div><div class="card"><div class="api-key-display">'+u.api_key_prefix+'</div><div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"><button class="btn-sm" id="btn-copy-curl">复制 curl</button><button class="btn-sm" id="btn-copy-py">复制 Python</button><button class="btn-sm" id="btn-reset-key" style="margin-left:auto">重新生成</button></div><div style="font-size:12px;color:var(--text-tertiary);margin-top:6px">完整 Key 仅创建时显示一次</div></div>';
-
-        // Upgrade buttons
-        ['free','pro','vip'].forEach(function(t){
-            var btn=document.getElementById('btn-up-'+t);
-            if(btn) btn.addEventListener('click',function(e){e.stopPropagation();
-                api.post('/payment/create-order',{tier:t}).then(function(o){showPaymentModal(o,tierNames[t],tierDefs[t].price)}).catch(function(e){showToast(e.message,'error')});
-            });
-        });
 
         var kd=container.querySelector('.api-key-display');
         if(kd) kd.addEventListener('click',function(){navigator.clipboard.writeText(this.textContent).then(function(){showToast('已复制','success')})});
@@ -124,8 +107,6 @@ registerRoute('#/dashboard', function(container) {
     load();
     return {unmount:function(){}};
 });
-
-function showPaymentModal(order, tierName, price) {
     var overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
     overlay.id = 'payment-modal';
