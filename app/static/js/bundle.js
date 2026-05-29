@@ -405,8 +405,9 @@ registerRoute('#/dashboard', function(container) {
             '<div class="stat-card"><div class="stat-label">请求次数</div><div class="stat-value">'+(usage.today_requests||0)+'</div><span style="font-size:12px;color:var(--text-tertiary)">累计 '+(usage.total_requests||0)+' · 今日</span></div>'+
             '</div>'+
 
-            // Usage trend chart - grouped input/output
+            // Usage trend chart
             '<div class="card"><h3 style="font-size:15px;font-weight:600;margin-bottom:16px">Token 用量趋势（近 7 天）</h3>'+
+            (usage.total_tokens === 0 ? '<p style="text-align:center;color:var(--text-tertiary);padding:40px">暂无使用数据，开始调用 API 后这里会显示趋势图</p>' : '')+
             '<div style="display:flex;gap:16px;align-items:center;margin-bottom:10px;font-size:12px;color:var(--text-secondary)">'+
             '<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--blue);margin-right:4px"></span>输入</span>'+
             '<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--accent);margin-right:4px"></span>输出</span>'+
