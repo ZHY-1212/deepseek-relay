@@ -151,4 +151,11 @@ async def spa(request: Request):
         css_content = css_path.read_text(encoding="utf-8")
     except Exception:
         pass
-    return templates.TemplateResponse("index.html", {"request": request, "inline_css": css_content})
+    # Auto-version busting: use file modification time
+    js_path = Path(__file__).parent / "static" / "js" / "bundle.js"
+    js_version = str(int(js_path.stat().st_mtime)) if js_path.exists() else "1"
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "inline_css": css_content,
+        "js_version": js_version
+    })
