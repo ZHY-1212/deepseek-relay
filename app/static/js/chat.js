@@ -74,6 +74,8 @@ registerRoute('#/chat', function(container) {
         var visible = showHistory ? all : recent;
         var hiddenCnt = all.length - visible.length;
 
+        // Hide first, render, scroll, then show — no visual flash
+        container.style.visibility = 'hidden';
         container.innerHTML =
             '<h2>AI 对话</h2><div class="card">'+
             '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'+
@@ -96,9 +98,10 @@ registerRoute('#/chat', function(container) {
             '<button type="submit" id="btn-send">发送</button></div>'+
             '<div class="chat-options"><label><input type="checkbox" id="stream-toggle" checked> 流式</label><label>模型 <select id="model-select"><optgroup label="DeepSeek"><option value="deepseek-chat" '+(selectedModel==='deepseek-chat'?'selected':'')+'>deepseek-chat</option><option value="deepseek-reasoner" '+(selectedModel==='deepseek-reasoner'?'selected':'')+'>deepseek-reasoner</option></optgroup><optgroup label="硅基流动"><option value="deepseek-ai/DeepSeek-V3" '+(selectedModel==='deepseek-ai/DeepSeek-V3'?'selected':'')+'>DeepSeek-V3</option><option value="deepseek-ai/DeepSeek-R1" '+(selectedModel==='deepseek-ai/DeepSeek-R1'?'selected':'')+'>DeepSeek-R1</option><option value="Qwen/Qwen2.5-72B-Instruct" '+(selectedModel==='Qwen/Qwen2.5-72B-Instruct'?'selected':'')+'>Qwen2.5-72B</option><option value="zai-org/GLM-4.6" '+(selectedModel==='zai-org/GLM-4.6'?'selected':'')+'>GLM-4.6</option></optgroup><optgroup label="阿里百炼"><option value="qwen-plus" '+(selectedModel==='qwen-plus'?'selected':'')+'>通义千问-Plus</option><option value="qwen-max" '+(selectedModel==='qwen-max'?'selected':'')+'>通义千问-Max</option></optgroup><optgroup label="智谱AI"><option value="glm-4-plus" '+(selectedModel==='glm-4-plus'?'selected':'')+'>GLM-4-Plus</option><option value="glm-4-flash" '+(selectedModel==='glm-4-flash'?'selected':'')+'>GLM-4-Flash</option></optgroup><optgroup label="火山方舟"><option value="doubao-pro-256k" '+(selectedModel==='doubao-pro-256k'?'selected':'')+'>豆包-Pro</option><option value="doubao-lite-128k" '+(selectedModel==='doubao-lite-128k'?'selected':'')+'>豆包-Lite</option></optgroup><optgroup label="Kimi"><option value="moonshot-v1-128k" '+(selectedModel==='moonshot-v1-128k'?'selected':'')+'>Kimi-128K</option></optgroup></select></label></div></form></div>';
 
-        // Go to bottom synchronously before browser paints
+        // Go to bottom while still hidden, then reveal
         var md2 = document.getElementById('chat-messages');
         if (md2) md2.scrollTop = md2.scrollHeight;
+        container.style.visibility = 'visible';
 
         // Event bindings
         document.getElementById('chat-form').addEventListener('submit', handleSend);
