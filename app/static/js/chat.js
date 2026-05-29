@@ -112,8 +112,9 @@ registerRoute('#/chat', (container) => {
 
         setTimeout(() => {
             const msgDiv = document.getElementById('chat-messages');
-            msgDiv.scrollTop = msgDiv.scrollHeight;
-        }, 50);
+            if (msgDiv) msgDiv.scrollTo({ top: msgDiv.scrollHeight, behavior: 'smooth' });
+            document.getElementById('chat-input')?.focus();
+        }, 100);
 
         document.getElementById('chat-form').addEventListener('submit', handleSend);
         document.getElementById('btn-upload').addEventListener('click', () => document.getElementById('file-input').click());
@@ -379,6 +380,7 @@ registerRoute('#/chat', (container) => {
                                 streamContent.textContent = fullContent;
                             }
                             const msgDiv = document.getElementById('chat-messages');
+                            const atBottom = msgDiv.scrollTop + msgDiv.clientHeight >= msgDiv.scrollHeight - 60;
                             msgDiv.scrollTop = msgDiv.scrollHeight;
                         } catch(e) {}
                     }
