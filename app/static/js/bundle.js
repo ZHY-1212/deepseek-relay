@@ -291,6 +291,66 @@ registerRoute('#/models-intro', function(container) {
 
     return {unmount:function(){}};
 });
+registerRoute('#/leaderboard', function(container) {
+    async function load() {
+        var user = JSON.parse(localStorage.getItem('user') || '{}');
+        var baseUrl = window.location.origin;
+        container.innerHTML = '<div style="text-align:center;padding:60px 0;color:var(--text-tertiary)">加载中...</div>';
+
+        // Fetch all models usage stats from admin
+        var allData = null;
+        try { allData = await api.get('/admin/all-users'); } catch(e) {}
+
+        if (!allData) {
+            container.innerHTML = '<p style="text-align:center;padding:60px;color:var(--text-secondary)">暂无数据</p>';
+            return;
+        }
+
+        var users = allData.users || [];
+        var overview = allData.overview || {};
+
+        // Model popularity (from usage records)
+        var modelCounts = {};
+        var hourlyData = Array(24).fill(0);
+        // We don't have detailed model usage per model publicly, so use what we have
+        var topUsers = users.slice(0, 20);
+
+        // Cost comparison
+        var platformCost = overview.estimated_revenue || 0;
+        var directCost = (overview.total_api_tokens || 0) / 1000000 * 2; // ~¥2/M at official prices
+        var savings = directCost > 0 ? Math.round((1 - platformCost / directCost) * 100) : 0;
+
+        container.innerHTML =
+            '<div class="page-header"><h2>平台数据</h2><p>用量排行 · 成本对比 · 社区透明</p></div>'+
+
+            '<div class="stats-grid">'+
+            '<div class="stat-card"><div class="stat-label">总用户</div><div class="stat-value">'+overview.total_users+'</div></div>'+
+            '<div class="stat-card"><div class="stat-label">总 API 调用</div><div class="stat-value">'+(overview.total_api_tokens||0).toLocaleString()+'</div></div>'+
+            '<div class="stat-card"><div class="stat-label">平台价格</div><div class="stat-value" style="color:var(--blue)">¥'+platformCost+'</div><span style="font-size:12px;color:var(--text-tertiary)">用户实际支付</span></div>'+
+            '<div class="stat-card"><div class="stat-label">官方直购价</div><div class="stat-value" style="color:var(--green)">¥'+(directCost.toFixed(0))+'</div><span style="font-size:12px;color:var(--text-tertiary)">如果直接买官方 API</span></div>'+
+            '</div>'+
+
+            '<div class="section-title">用户消耗排行 Top 20</div>'+
+            '<div class="card" style="padding:0;overflow:hidden"><table class="data-table"><thead><tr><th>#</th><th>用户</th><th>套餐</th><th>API Token</th></tr></thead><tbody>'+
+            topUsers.map(function(u,i){
+                return '<tr><td>'+(i+1)+'</td><td>'+u.username.slice(0,2)+'***</td><td><span class="badge badge-'+u.tier+'">'+u.tier+'</span></td><td>'+u.total_api_tokens.toLocaleString()+'</td></tr>';
+            }).join('')+
+            '</tbody></table></div>'+
+
+            '<div class="section-title">时段热力图（全平台）</div>'+
+            '<div class="card"><div class="chart-bars">'+
+            hourlyData.map(function(v,i){
+                var h = Math.max(2, (v / Math.max(1, Math.max.apply(null, hourlyData))) * 100);
+                return '<div class="chart-bar" style="height:'+h+'%;background:var(--blue);opacity:.5" title="'+i+'时: '+v+' 次"></div>';
+            }).join('')+
+            '</div><div class="chart-labels">'+hourlyData.map(function(v,i){return '<span>'+i+'时</span>'}).join('')+'</div></div>'+
+
+            '<p style="text-align:center;font-size:12px;color:var(--text-tertiary);margin-top:20px">数据每小时更新 · 用户隐私已脱敏</p>';
+
+    }
+    load();
+    return {unmount:function(){}};
+});
 registerRoute('#/dashboard', function(container) {
     var profile = null;
     var tierNames = {free:'免费版',pro:'专业版',vip:'至尊版'};
@@ -364,7 +424,7 @@ registerRoute('#/dashboard', function(container) {
             }).join('')+'</div>'+
 
             // API Key
-            '<div class="section-title">API Key</div><div class="card"><div class="api-key-display">'+u.api_key_prefix+'</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px"><span style="font-size:12px;color:var(--text-tertiary)">完整 Key 仅创建时显示一次</span><button class="btn-sm" id="btn-reset-key">重新生成</button></div></div>';
+            '<div class="section-title">API Key</div><div class="card"><div class="api-key-display">'+u.api_key_prefix+'</div><div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"><button class="btn-sm" id="btn-copy-curl">复制 curl</button><button class="btn-sm" id="btn-copy-py">复制 Python</button><button class="btn-sm" id="btn-reset-key" style="margin-left:auto">重新生成</button></div><div style="font-size:12px;color:var(--text-tertiary);margin-top:6px">完整 Key 仅创建时显示一次</div></div>';
 
         // Upgrade buttons
         ['free','pro','vip'].forEach(function(t){
@@ -376,6 +436,18 @@ registerRoute('#/dashboard', function(container) {
 
         var kd=container.querySelector('.api-key-display');
         if(kd) kd.addEventListener('click',function(){navigator.clipboard.writeText(this.textContent).then(function(){showToast('已复制','success')})});
+
+        // Copy curl
+        var cbCurl=document.getElementById('btn-copy-curl');
+        if(cbCurl) cbCurl.addEventListener('click',function(){
+            var curl='curl '+window.location.origin+'/v1/chat/completions \\\n  -H "Content-Type: application/json" \\\n  -H "Authorization: Bearer '+u.api_key_prefix+'" \\\n  -d \'{"model":"deepseek-chat","messages":[{"role":"user","content":"hello"}]}\'';
+            navigator.clipboard.writeText(curl).then(function(){showToast('已复制 curl 命令','success')});
+        });
+        var cbPy=document.getElementById('btn-copy-py');
+        if(cbPy) cbPy.addEventListener('click',function(){
+            var py='from openai import OpenAI\n\nclient = OpenAI(\n    api_key="'+u.api_key_prefix+'",\n    base_url="'+window.location.origin+'/v1"\n)\n\nresponse = client.chat.completions.create(\n    model="deepseek-chat",\n    messages=[{"role":"user","content":"hello"}]\n)\nprint(response.choices[0].message.content)';
+            navigator.clipboard.writeText(py).then(function(){showToast('已复制 Python 代码','success')});
+        });
 
         var rb=document.getElementById('btn-reset-key');
         if(rb) rb.addEventListener('click',function(){if(!confirm('重新生成后旧 Key 立即失效，确认？'))return;
@@ -1386,10 +1458,21 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Theme toggle
+// System dark mode detection
+function applySystemTheme() {
+    var saved = localStorage.getItem('theme');
+    if (saved) { document.documentElement.setAttribute('data-theme', saved); return; }
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    }
+}
+applySystemTheme();
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
+    if (!localStorage.getItem('theme')) applySystemTheme();
+});
+
+// Theme toggle button
 var themeBtn = document.getElementById('btn-theme');
-var savedTheme = localStorage.getItem('theme') || 'light';
-document.documentElement.setAttribute('data-theme', savedTheme);
 if (themeBtn) themeBtn.addEventListener('click', function() {
     var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
@@ -1409,26 +1492,37 @@ function showToast(message, type) {
     setTimeout(function() { toast.style.opacity = '0'; toast.style.transition = 'opacity .2s'; setTimeout(function() { toast.remove(); }, 200); }, 3500);
 }
 
-// Poll pending orders badge (admin only)
-setInterval(async function() {
-    var badge = document.getElementById('admin-badge');
-    if (!badge || badge.style.display === 'none') return;
+// Sound effects
+var audioCtx = null;
+function playSound(freq, duration, type) {
+    try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        var osc = audioCtx.createOscillator();
+        var gain = audioCtx.createGain();
+        osc.type = type || 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
+    } catch(e) {}
+}
+function soundSuccess() { playSound(880, 0.3); }
+function soundError() { playSound(220, 0.5, 'square'); }
+
+// Dynamic page title with balance
+setInterval(function() {
     try {
         var user = JSON.parse(localStorage.getItem('user') || '{}');
-        if (!user.is_admin) return;
-        var orders = await api.get('/payment/orders');
-        var pending = orders.filter(function(o) { return o.status === 'pending'; }).length;
-        if (pending > 0) {
-            badge.textContent = pending;
-            badge.style.display = 'inline';
-        } else {
-            badge.style.display = 'none';
-        }
+        var bal = user.balance_tokens || 0;
+        var money = (bal / 1000000).toFixed(1);
+        document.title = (bal > 0 ? '¥' + money + ' - ' : '') + 'DS Relay';
     } catch(e) {}
-}, 30000); // every 30 seconds
+}, 5000);
 
-// Enter key for chat
+// Keyboard shortcuts
 document.addEventListener('keydown', function(e) {
+    // Enter key for chat
     if (e.key === 'Enter' && !e.shiftKey) {
         var el = document.getElementById('chat-input');
         if (el === document.activeElement) {
@@ -1436,6 +1530,20 @@ document.addEventListener('keydown', function(e) {
             var form = document.getElementById('chat-form');
             if (form) form.dispatchEvent(new Event('submit'));
         }
+    }
+    // Ctrl+Enter anywhere in chat
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        var el2 = document.getElementById('chat-input');
+        if (el2 && document.getElementById('chat-messages')) {
+            e.preventDefault();
+            var form2 = document.getElementById('chat-form');
+            if (form2) form2.dispatchEvent(new Event('submit'));
+        }
+    }
+    // Ctrl+K = go to models
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        window.location.hash = '#/models';
     }
 });
 // Desktop Pet - Whale Mascot

@@ -71,7 +71,7 @@ registerRoute('#/dashboard', function(container) {
             }).join('')+'</div>'+
 
             // API Key
-            '<div class="section-title">API Key</div><div class="card"><div class="api-key-display">'+u.api_key_prefix+'</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px"><span style="font-size:12px;color:var(--text-tertiary)">完整 Key 仅创建时显示一次</span><button class="btn-sm" id="btn-reset-key">重新生成</button></div></div>';
+            '<div class="section-title">API Key</div><div class="card"><div class="api-key-display">'+u.api_key_prefix+'</div><div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"><button class="btn-sm" id="btn-copy-curl">复制 curl</button><button class="btn-sm" id="btn-copy-py">复制 Python</button><button class="btn-sm" id="btn-reset-key" style="margin-left:auto">重新生成</button></div><div style="font-size:12px;color:var(--text-tertiary);margin-top:6px">完整 Key 仅创建时显示一次</div></div>';
 
         // Upgrade buttons
         ['free','pro','vip'].forEach(function(t){
@@ -83,6 +83,18 @@ registerRoute('#/dashboard', function(container) {
 
         var kd=container.querySelector('.api-key-display');
         if(kd) kd.addEventListener('click',function(){navigator.clipboard.writeText(this.textContent).then(function(){showToast('已复制','success')})});
+
+        // Copy curl
+        var cbCurl=document.getElementById('btn-copy-curl');
+        if(cbCurl) cbCurl.addEventListener('click',function(){
+            var curl='curl '+window.location.origin+'/v1/chat/completions \\\n  -H "Content-Type: application/json" \\\n  -H "Authorization: Bearer '+u.api_key_prefix+'" \\\n  -d \'{"model":"deepseek-chat","messages":[{"role":"user","content":"hello"}]}\'';
+            navigator.clipboard.writeText(curl).then(function(){showToast('已复制 curl 命令','success')});
+        });
+        var cbPy=document.getElementById('btn-copy-py');
+        if(cbPy) cbPy.addEventListener('click',function(){
+            var py='from openai import OpenAI\n\nclient = OpenAI(\n    api_key="'+u.api_key_prefix+'",\n    base_url="'+window.location.origin+'/v1"\n)\n\nresponse = client.chat.completions.create(\n    model="deepseek-chat",\n    messages=[{"role":"user","content":"hello"}]\n)\nprint(response.choices[0].message.content)';
+            navigator.clipboard.writeText(py).then(function(){showToast('已复制 Python 代码','success')});
+        });
 
         var rb=document.getElementById('btn-reset-key');
         if(rb) rb.addEventListener('click',function(){if(!confirm('重新生成后旧 Key 立即失效，确认？'))return;
