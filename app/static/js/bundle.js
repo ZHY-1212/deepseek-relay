@@ -109,7 +109,9 @@ window.addEventListener('load', navigate);
 registerRoute('#/login', function(container) {
     var tab = 'login';
     function render() {
-        container.innerHTML = '<div class="auth-page"><div class="auth-card">' +
+        container.innerHTML = '<div class="auth-page">'+
+            '<div class="geo geo-1"></div><div class="geo geo-2"></div><div class="geo geo-3"></div><div class="geo geo-4"></div><div class="geo geo-5"></div>'+
+            '<div class="auth-card" style="position:relative;z-index:1">' +
             '<div class="auth-icon"><svg width="48" height="48" viewBox="0 0 48 48"><rect width="48" height="48" rx="12" fill="#6366f1"/><path d="M24 8c-7 0-13 6-14 12-1 3-1 8 2 11 3 3 8 3 12 2 5-1 10-5 13-10 3-5 2-9-1-12-3-3-8-3-12-3z" fill="#fff" opacity=".25"/><circle cx="17" cy="20" r="2.5" fill="#fff"/><path d="M26 18c2-2 7-4 9-4" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg></div>' +
             '<h1>DS Relay</h1><p class="subtitle">多模型 AI API 聚合平台<br>一个 Key 调用所有主流大模型</p>' +
             '<div class="tabs"><button id="tab-login" class="'+(tab==='login'?'active':'')+'">登录</button><button id="tab-register" class="'+(tab==='register'?'active':'')+'">注册</button></div>' +
