@@ -86,20 +86,12 @@ body {
 .btn-logout:hover { border-color: var(--red); color: var(--red); background: rgba(239,68,68,.06); }
 
 /* ═══ Main ═══ */
-#app { flex: 1; margin-left: 224px; padding: 40px 48px 100px; max-width: 960px; width: 100%; }
+#app { display: block; }
+#app-main { flex: 1; margin-left: 224px; padding: 40px 48px 100px; max-width: 960px; width: 100%; }
 
-/* Page transition */
-.page-enter { animation: pageIn .25s var(--ease); }
-@keyframes pageIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-
-/* Skeleton loading */
-.skeleton {
-    background: linear-gradient(90deg, var(--bg-hover) 25%, var(--border) 50%, var(--bg-hover) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-    border-radius: 6px;
+@media (max-width: 768px) {
+    #app-main { margin-left: 56px; padding: 24px 16px 80px; }
 }
-@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
 /* ═══ Auth ═══ */
 .auth-page {
@@ -429,7 +421,7 @@ a:active { opacity: .7; }
     .btn-logout { font-size: 11px; padding: 8px; }
     .theme-btn { font-size: 0; justify-content: center; padding: 8px; }
     .theme-btn span:first-child { font-size: 16px; }
-    #app { margin-left: 56px; padding: 24px 16px 80px; }
+    #app-main { margin-left: 56px; padding: 24px 16px 80px; }
     .auth-card { width: 100%; padding: 32px 22px; }
     .chat-msg .bubble { max-width: 88%; }
     .stats-grid { grid-template-columns: 1fr; }

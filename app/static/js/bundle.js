@@ -40,29 +40,35 @@ const api = {
     }
 };
 const routes = {};
-let currentPage = null;
+var currentPage = null;
+var currentContainer = null;
 
 function registerRoute(hash, renderFn) {
     routes[hash] = renderFn;
 }
 
 function navigate() {
-    const hash = window.location.hash || '#/login';
-    const token = api.getToken();
-    const isPublic = hash === '#/login';
+    var hash = window.location.hash || '#/login';
+    var token = api.getToken();
+    var isPublic = hash === '#/login';
 
     if (!token && !isPublic) { window.location.hash = '#/login'; return; }
     if (token && isPublic) { window.location.hash = '#/dashboard'; return; }
 
-    const layout = document.getElementById('app-layout');
-    const app = document.getElementById('app');
+    var layout = document.getElementById('app-layout');
+    var appPublic = document.getElementById('app');       // for auth pages
+    var appMain = document.getElementById('app-main');    // for logged-in pages
 
     if (token && !isPublic) {
         layout.style.display = 'flex';
+        appPublic.style.display = 'none';
         var user = JSON.parse(localStorage.getItem('user') || '{}');
         document.querySelectorAll('.admin-only').forEach(function(el) { el.style.display = user.is_admin ? '' : 'none'; });
+        currentContainer = appMain;
     } else {
         layout.style.display = 'none';
+        appPublic.style.display = 'block';
+        currentContainer = appPublic;
     }
 
     // Nav highlight
@@ -70,23 +76,23 @@ function navigate() {
         link.classList.toggle('active', link.getAttribute('href') === hash);
     });
 
-    // Cleanup previous page
+    // Cleanup
     if (currentPage && currentPage.unmount) {
         try { currentPage.unmount(); } catch(e) {}
     }
 
     var renderFn = routes[hash];
-    app.innerHTML = '';
+    currentContainer.innerHTML = '';
 
     if (renderFn) {
         try {
-            currentPage = renderFn(app);
+            currentPage = renderFn(currentContainer);
         } catch(e) {
-            app.innerHTML = '<p style="color:var(--red);padding:40px">页面加载出错：' + e.message + '</p>';
-            console.error('Route error:', e);
+            currentContainer.innerHTML = '<p style="color:var(--red);padding:40px">页面加载出错：' + e.message + '</p>';
+            console.error(e);
         }
     } else {
-        app.innerHTML = '<h2 style="text-align:center;padding:80px;color:var(--text-secondary)">页面不存在</h2>';
+        currentContainer.innerHTML = '<h2 style="text-align:center;padding:80px;color:var(--text-secondary)">页面不存在</h2>';
     }
 }
 
