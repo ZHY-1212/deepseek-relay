@@ -245,6 +245,17 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:none}
 ::selection{background:var(--accent-subtle)}
 button:active{transform:scale(.97)}
 
+/* Desktop Pet */
+#desktop-pet { position: fixed; bottom: 20px; right: 20px; z-index: 9998; cursor: grab; user-select: none; transition: transform .3s ease; }
+#desktop-pet .pet-body { filter: drop-shadow(0 4px 12px rgba(99,102,241,.3)); }
+#desktop-pet .pet-body svg { display: block; }
+#desktop-pet:hover .pet-body { filter: drop-shadow(0 6px 20px rgba(99,102,241,.45)); }
+.pet-bubble::after {
+    content: ''; position: absolute; bottom: -6px; right: 20px;
+    width: 12px; height: 12px; background: inherit; border: inherit;
+    border-top: none; border-left: none; transform: rotate(45deg);
+}
+
 /* Mobile */
 @media (max-width: 768px) {
     #app { padding: 20px 14px 80px; }

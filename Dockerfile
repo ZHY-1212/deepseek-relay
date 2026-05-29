@@ -6,7 +6,7 @@ RUN pip install -r requirements.txt --no-cache-dir
 
 COPY . .
 # Merge all JS into single bundle for fast loading
-RUN cd app/static/js && cat api.js router.js auth.js models.js dashboard.js chat.js history.js admin.js docs.js profile.js app.js > bundle.js
+RUN cd app/static/js && cat api.js router.js auth.js models.js dashboard.js chat.js history.js admin.js docs.js profile.js app.js pet.js > bundle.js
 RUN mkdir -p data
 
 EXPOSE 8000
