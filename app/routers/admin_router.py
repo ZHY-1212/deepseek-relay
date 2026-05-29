@@ -68,6 +68,25 @@ async def toggle_admin(user_id: str, request: Request):
     return {"id": user.id, "is_admin": user.is_admin}
 
 
+@router.delete("/users/{user_id}")
+async def delete_user(user_id: str, request: Request):
+    from app.main import user_store
+    admin = get_current_user(request)
+    if not admin.is_admin:
+        raise HTTPException(status_code=403, detail="需要管理员权限")
+    user = user_store.get_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在")
+    if user.is_admin:
+        raise HTTPException(status_code=400, detail="不能删除管理员")
+    # Delete user from store
+    data = user_store.store.read_all()
+    if user_id in data:
+        del data[user_id]
+        user_store.store.write_all(data)
+    return {"message": "用户已删除"}
+
+
 @router.put("/users/{user_id}/tier")
 async def change_tier(user_id: str, body: ChangeTierRequest, request: Request):
     from app.main import user_store, tier_store

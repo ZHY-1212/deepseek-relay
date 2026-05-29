@@ -892,7 +892,7 @@ registerRoute('#/admin', function(container) {
         } else if (currentTab === 'users') {
             area.innerHTML = '<div class="card" style="padding:0;overflow:hidden"><table class="data-table"><thead><tr><th>用户</th><th>邮箱</th><th>套餐</th><th>余额</th><th>消耗</th><th>请求</th><th>状态</th><th>操作</th></tr></thead><tbody>'+
                 data.users.map(function(u){
-                    return '<tr class="'+(u.is_banned?'banned':'')+'"><td>'+u.username+(u.is_admin?' ⭐':'')+'</td><td>'+u.email+'</td><td><span class="badge badge-'+u.tier+'">'+u.tier+'</span></td><td>'+u.balance.toLocaleString()+'</td><td>'+u.total_deducted.toLocaleString()+'</td><td>'+u.total_requests+'</td><td>'+(u.is_banned?'<span style="color:var(--red)">封禁</span>':'<span style="color:var(--green)">正常</span>')+'</td><td><button class="btn-sm btn-ban" data-id="'+u.id+'" data-banned="'+u.is_banned+'">'+(u.is_banned?'解封':'封禁')+'</button> <button class="btn-sm btn-admin" data-id="'+u.id+'" style="margin:0 2px">'+(u.is_admin?'取消管理':'设管理')+'</button> <select class="tier-select styled" data-id="'+u.id+'"><option value="free" '+(u.tier==='free'?'selected':'')+'>免费</option><option value="pro" '+(u.tier==='pro'?'selected':'')+'>专业</option><option value="vip" '+(u.tier==='vip'?'selected':'')+'>至尊</option></select></td></tr>';
+                    return '<tr class="'+(u.is_banned?'banned':'')+'"><td>'+u.username+(u.is_admin?' ⭐':'')+'</td><td>'+u.email+'</td><td><span class="badge badge-'+u.tier+'">'+u.tier+'</span></td><td>'+u.balance.toLocaleString()+'</td><td>'+u.total_deducted.toLocaleString()+'</td><td>'+u.total_requests+'</td><td>'+(u.is_banned?'<span style="color:var(--red)">封禁</span>':'<span style="color:var(--green)">正常</span>')+'</td><td><button class="btn-sm btn-ban" data-id="'+u.id+'" data-banned="'+u.is_banned+'">'+(u.is_banned?'解封':'封禁')+'</button> <button class="btn-sm btn-admin" data-id="'+u.id+'" style="margin:0 2px">'+(u.is_admin?'取消管理':'设管理')+'</button> <select class="tier-select styled" data-id="'+u.id+'"><option value="free" '+(u.tier==='free'?'selected':'')+'>免费</option><option value="pro" '+(u.tier==='pro'?'selected':'')+'>专业</option><option value="vip" '+(u.tier==='vip'?'selected':'')+'>至尊</option></select> '+(u.is_admin?'':'<button class="btn-sm btn-del" data-id="'+u.id+'" style="color:var(--red);border-color:var(--red);margin-top:4px">删除</button>')+'</td></tr>';
                 }).join('')+'</tbody></table></div>';
 
             area.querySelectorAll('.btn-ban').forEach(function(btn){
@@ -910,6 +910,13 @@ registerRoute('#/admin', function(container) {
             area.querySelectorAll('.btn-admin').forEach(function(btn){
                 btn.addEventListener('click',async function(){
                     try { await api.put('/admin/users/'+btn.dataset.id+'/admin'); showToast('管理员状态已更新','success'); await load(); }
+                    catch(e){ showToast(e.message,'error'); }
+                });
+            });
+            area.querySelectorAll('.btn-del').forEach(function(btn){
+                btn.addEventListener('click',async function(){
+                    if (!confirm('确定删除用户 '+btn.dataset.id.slice(0,8)+'？此操作不可恢复！')) return;
+                    try { await api.request('DELETE','/admin/users/'+btn.dataset.id); showToast('用户已删除','success'); await load(); }
                     catch(e){ showToast(e.message,'error'); }
                 });
             });
