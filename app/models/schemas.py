@@ -18,7 +18,7 @@ class ChatRequest(BaseModel):
     model: str = "deepseek-chat"
     messages: list
     temperature: float = 0.7
-    max_tokens: int = 4096
+    max_tokens: int = 2048
     stream: bool = False
 
 
