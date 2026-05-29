@@ -87,11 +87,13 @@ async def platform_stats(request: Request):
 
 @router.post("/payment-qr")
 async def set_payment_qr(request: Request):
-    """Admin uploads their personal payment QR code (base64 image)."""
+    """Admin uploads payment QR codes (wechat + alipay)."""
     from app.main import tier_store
     body = await request.json()
-    qr_data = body.get("qr_image", "")
-    tier_store.update("payment", {"qr_image": qr_data})
+    qr_data = tier_store.get("payment") or {}
+    if "wechat_qr" in body: qr_data["wechat_qr"] = body["wechat_qr"]
+    if "alipay_qr" in body: qr_data["alipay_qr"] = body["alipay_qr"]
+    tier_store.update("payment", qr_data)
     return {"message": "收款码已更新"}
 
 
@@ -99,7 +101,7 @@ async def set_payment_qr(request: Request):
 async def get_payment_qr():
     from app.main import tier_store
     data = tier_store.get("payment") or {}
-    return {"qr_image": data.get("qr_image", "")}
+    return {"wechat_qr": data.get("wechat_qr", ""), "alipay_qr": data.get("alipay_qr", "")}
 
 
 @router.get("/all-users")

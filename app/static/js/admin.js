@@ -99,28 +99,32 @@ registerRoute('#/admin', function(container) {
                 });
             });
         } else if (currentTab === 'qr') {
-            area.innerHTML = '<div class="section-title">上传收款码</div>'+
-                '<div class="card"><p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px">上传你的个人微信或支付宝收款码，用户在充值页面扫码付款。支持 JPG/PNG 图片。</p>'+
-                '<input type="file" id="qr-file-input" accept="image/*" style="display:none">'+
-                '<button class="btn-outline" id="btn-upload-qr">选择收款码图片</button>'+
-                '<div id="qr-preview" style="margin-top:12px"></div>'+
-                '<span id="qr-msg" class="inline-msg"></span></div>';
+            area.innerHTML = '<div class="section-title">收款码设置</div>'+
+                '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">'+
+                '<div class="card"><h3 style="font-size:14px;margin-bottom:10px">微信收款码</h3><input type="file" id="wx-file" accept="image/*" style="display:none"><button class="btn-outline" id="btn-wx">上传微信码</button><div id="wx-preview" style="margin-top:10px"></div></div>'+
+                '<div class="card"><h3 style="font-size:14px;margin-bottom:10px">支付宝收款码</h3><input type="file" id="zfb-file" accept="image/*" style="display:none"><button class="btn-outline" id="btn-zfb">上传支付宝码</button><div id="zfb-preview" style="margin-top:10px"></div></div>'+
+                '</div><span id="qr-msg" class="inline-msg"></span>';
 
-            document.getElementById('btn-upload-qr').addEventListener('click',function(){ document.getElementById('qr-file-input').click(); });
-            document.getElementById('qr-file-input').addEventListener('change', function(e){
-                var file = e.target.files[0]; if (!file) return;
-                if (file.size > 500*1024) { showToast('图片不能超过 500KB','error'); return; }
-                var reader = new FileReader();
-                reader.onload = async function(){
-                    document.getElementById('qr-preview').innerHTML = '<img src="'+reader.result+'" style="max-width:220px;border-radius:8px;border:1px solid var(--border)"><p style="font-size:12px;color:var(--green);margin-top:8px">上传中...</p>';
-                    try {
-                        await api.post('/admin/payment-qr', {qr_image: reader.result});
-                        document.getElementById('qr-preview').innerHTML = '<img src="'+reader.result+'" style="max-width:220px;border-radius:8px;border:1px solid var(--border)"><p style="font-size:12px;color:var(--green);margin-top:8px">收款码已保存</p>';
-                        showToast('收款码已更新','success');
-                    } catch(er) { showToast(er.message,'error'); }
-                };
-                reader.readAsDataURL(file);
-            });
+            function doUpload(fileInput, btn, preview, key) {
+                btn.addEventListener('click',function(){ fileInput.click(); });
+                fileInput.addEventListener('change', function(e){
+                    var file = e.target.files[0]; if (!file) return;
+                    if (file.size > 500*1024) { showToast('图片不能超过 500KB','error'); return; }
+                    var reader = new FileReader();
+                    reader.onload = async function(){
+                        preview.innerHTML = '<img src="'+reader.result+'" style="max-width:180px;border-radius:8px;border:1px solid var(--border)"><p style="font-size:11px;color:var(--green);margin-top:4px">保存中...</p>';
+                        try {
+                            var body = {}; body[key] = reader.result;
+                            await api.post('/admin/payment-qr', body);
+                            preview.innerHTML = '<img src="'+reader.result+'" style="max-width:180px;border-radius:8px;border:1px solid var(--border)"><p style="font-size:11px;color:var(--green);margin-top:4px">已保存</p>';
+                            showToast('收款码已更新','success');
+                        } catch(er) { showToast(er.message,'error'); }
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+            doUpload(document.getElementById('wx-file'), document.getElementById('btn-wx'), document.getElementById('wx-preview'), 'wechat_qr');
+            doUpload(document.getElementById('zfb-file'), document.getElementById('btn-zfb'), document.getElementById('zfb-preview'), 'alipay_qr');
         } else if (currentTab === 'tiers') {
             var tiers = data.tiers || {};
             area.innerHTML = '<div class="stats-grid">'+

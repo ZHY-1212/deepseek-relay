@@ -664,33 +664,31 @@ registerRoute('#/pay', function(container) {
         try { result = await api.post('/payment/topup', {amount: amount}); }
         catch(e) { container.innerHTML = '<div style="text-align:center;padding:80px"><h2>订单创建失败</h2><p style="color:var(--red)">'+e.message+'</p><a href="#/recharge" style="color:var(--accent)">返回</a></div>'; return; }
 
-        // Get QR image
-        var qrImg = '';
+        // Get QR images
+        var wxQr = '', zfbQr = '';
         if (result.method === 'wechat_qr') {
-            qrImg = result.qrcode;
+            wxQr = result.qrcode;
         } else {
-            try { var d = await api.get('/admin/payment-qr'); if (d.qr_image) qrImg = d.qr_image; } catch(e) {}
+            try { var d = await api.get('/admin/payment-qr'); wxQr = d.wechat_qr || ''; zfbQr = d.alipay_qr || ''; } catch(e) {}
         }
 
         var tokenEstimate = (amount * 100).toFixed(0);
 
         container.innerHTML =
-            '<div style="max-width:500px;margin:40px auto">'+
+            '<div style="max-width:520px;margin:40px auto">'+
             '<a href="#/recharge" style="color:var(--text-secondary);font-size:13px;text-decoration:none">&larr; 返回充值</a>'+
             '<div class="card" style="margin-top:16px;text-align:center">'+
             '<div style="font-size:14px;color:var(--text-secondary);margin-bottom:8px">支付金额</div>'+
             '<div style="font-size:42px;font-weight:800;letter-spacing:-.04em;color:var(--accent);margin-bottom:4px">¥'+amount+'</div>'+
             '<div style="font-size:14px;color:var(--text-secondary);margin-bottom:20px">≈ '+tokenEstimate+' 万平台 Token</div>'+
+            '<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:16px">订单号：'+result.order_id.slice(0,8)+'…</div>'+
 
-            '<div style="background:var(--bg-hover);border-radius:var(--radius-lg);padding:20px;margin-bottom:16px">'+
-            '<div style="font-size:12px;color:var(--text-tertiary);margin-bottom:10px">订单号：'+result.order_id.slice(0,8)+'…</div>'+
-            (qrImg
-                ? '<img src="'+qrImg+'" alt="收款码" style="width:220px;height:220px;border-radius:12px;border:1px solid var(--border);background:#fff">'
-                : '<div style="width:220px;height:220px;border-radius:12px;border:2px dashed var(--border);margin:0 auto;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);font-size:13px">管理员尚未上传收款码</div>'
-            )+
-            '<p style="font-size:14px;color:var(--text);margin-top:14px;font-weight:550">请使用微信/支付宝扫码支付</p>'+
-            '<p style="font-size:12px;color:var(--text-tertiary);margin-top:4px">付款时请备注用户名，管理员确认后自动到账</p>'+
+            '<div style="display:grid;grid-template-columns:'+((wxQr&&zfbQr)?'1fr 1fr':'1fr')+';gap:16px;margin-bottom:16px">'+
+            (wxQr ? '<div style="background:var(--bg-hover);border-radius:var(--radius-lg);padding:16px"><div style="font-size:13px;font-weight:600;color:#07c160;margin-bottom:10px">微信支付</div><img src="'+wxQr+'" style="width:180px;height:180px;border-radius:10px;background:#fff"></div>' : '')+
+            (zfbQr ? '<div style="background:var(--bg-hover);border-radius:var(--radius-lg);padding:16px"><div style="font-size:13px;font-weight:600;color:#1677ff;margin-bottom:10px">支付宝</div><img src="'+zfbQr+'" style="width:180px;height:180px;border-radius:10px;background:#fff"></div>' : '')+
             '</div>'+
+            (!wxQr&&!zfbQr ? '<div style="padding:40px;border:2px dashed var(--border);border-radius:var(--radius-lg);color:var(--text-tertiary);font-size:13px;margin-bottom:16px">管理员尚未上传收款码</div>' : '')+
+            '<p style="font-size:13px;color:var(--text-secondary);margin-bottom:4px">付款时请备注用户名</p>'+
 
             '<button class="btn-primary" style="width:100%;padding:14px;font-size:15px" id="btn-paid">✅ 我已完成支付</button>'+
             '<p style="font-size:12px;color:var(--text-tertiary);margin-top:12px;text-align:center">支付成功后请联系管理员确认，余额即时到账</p>'+
@@ -806,28 +804,32 @@ registerRoute('#/admin', function(container) {
                 });
             });
         } else if (currentTab === 'qr') {
-            area.innerHTML = '<div class="section-title">上传收款码</div>'+
-                '<div class="card"><p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px">上传你的个人微信或支付宝收款码，用户在充值页面扫码付款。支持 JPG/PNG 图片。</p>'+
-                '<input type="file" id="qr-file-input" accept="image/*" style="display:none">'+
-                '<button class="btn-outline" id="btn-upload-qr">选择收款码图片</button>'+
-                '<div id="qr-preview" style="margin-top:12px"></div>'+
-                '<span id="qr-msg" class="inline-msg"></span></div>';
+            area.innerHTML = '<div class="section-title">收款码设置</div>'+
+                '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">'+
+                '<div class="card"><h3 style="font-size:14px;margin-bottom:10px">微信收款码</h3><input type="file" id="wx-file" accept="image/*" style="display:none"><button class="btn-outline" id="btn-wx">上传微信码</button><div id="wx-preview" style="margin-top:10px"></div></div>'+
+                '<div class="card"><h3 style="font-size:14px;margin-bottom:10px">支付宝收款码</h3><input type="file" id="zfb-file" accept="image/*" style="display:none"><button class="btn-outline" id="btn-zfb">上传支付宝码</button><div id="zfb-preview" style="margin-top:10px"></div></div>'+
+                '</div><span id="qr-msg" class="inline-msg"></span>';
 
-            document.getElementById('btn-upload-qr').addEventListener('click',function(){ document.getElementById('qr-file-input').click(); });
-            document.getElementById('qr-file-input').addEventListener('change', function(e){
-                var file = e.target.files[0]; if (!file) return;
-                if (file.size > 500*1024) { showToast('图片不能超过 500KB','error'); return; }
-                var reader = new FileReader();
-                reader.onload = async function(){
-                    document.getElementById('qr-preview').innerHTML = '<img src="'+reader.result+'" style="max-width:220px;border-radius:8px;border:1px solid var(--border)"><p style="font-size:12px;color:var(--green);margin-top:8px">上传中...</p>';
-                    try {
-                        await api.post('/admin/payment-qr', {qr_image: reader.result});
-                        document.getElementById('qr-preview').innerHTML = '<img src="'+reader.result+'" style="max-width:220px;border-radius:8px;border:1px solid var(--border)"><p style="font-size:12px;color:var(--green);margin-top:8px">收款码已保存</p>';
-                        showToast('收款码已更新','success');
-                    } catch(er) { showToast(er.message,'error'); }
-                };
-                reader.readAsDataURL(file);
-            });
+            function doUpload(fileInput, btn, preview, key) {
+                btn.addEventListener('click',function(){ fileInput.click(); });
+                fileInput.addEventListener('change', function(e){
+                    var file = e.target.files[0]; if (!file) return;
+                    if (file.size > 500*1024) { showToast('图片不能超过 500KB','error'); return; }
+                    var reader = new FileReader();
+                    reader.onload = async function(){
+                        preview.innerHTML = '<img src="'+reader.result+'" style="max-width:180px;border-radius:8px;border:1px solid var(--border)"><p style="font-size:11px;color:var(--green);margin-top:4px">保存中...</p>';
+                        try {
+                            var body = {}; body[key] = reader.result;
+                            await api.post('/admin/payment-qr', body);
+                            preview.innerHTML = '<img src="'+reader.result+'" style="max-width:180px;border-radius:8px;border:1px solid var(--border)"><p style="font-size:11px;color:var(--green);margin-top:4px">已保存</p>';
+                            showToast('收款码已更新','success');
+                        } catch(er) { showToast(er.message,'error'); }
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+            doUpload(document.getElementById('wx-file'), document.getElementById('btn-wx'), document.getElementById('wx-preview'), 'wechat_qr');
+            doUpload(document.getElementById('zfb-file'), document.getElementById('btn-zfb'), document.getElementById('zfb-preview'), 'alipay_qr');
         } else if (currentTab === 'tiers') {
             var tiers = data.tiers || {};
             area.innerHTML = '<div class="stats-grid">'+
