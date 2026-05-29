@@ -43,8 +43,20 @@ html{scroll-behavior:smooth}
 @keyframes fadeSlide{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
 /* ═══ Auth ═══ */
-.auth-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#f0f4ff 0%,#f8fafc 40%,#ede9fe 100%);padding:32px}
-[data-theme="dark"] .auth-page{background:linear-gradient(160deg,#0f172a 0%,#0b1120 50%,#1e1b4b 100%)}
+.auth-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f0f2f5;padding:32px;position:relative;overflow:hidden}
+.auth-page::before{content:'';position:absolute;inset:0;background:
+    linear-gradient(135deg,transparent 48%,#e0e7ff 48%,#e0e7ff 52%,transparent 52%),
+    linear-gradient(225deg,transparent 48%,#ede9fe 48%,#ede9fe 52%,transparent 52%),
+    linear-gradient(315deg,transparent 30%,#dbeafe 30%,#dbeafe 70%,transparent 70%),
+    linear-gradient(45deg,#f8fafc 20%,transparent 20%,transparent 80%,#f0f4ff 80%);
+    background-size:120px 120px,100px 100px,80px 80px,140px 140px;
+    background-position:0 0,60px 20px,30px 80px,90px 40px;opacity:.6}
+[data-theme="dark"] .auth-page{background:#0b1120}
+[data-theme="dark"] .auth-page::before{background:
+    linear-gradient(135deg,transparent 48%,#1e293b 48%,#1e293b 52%,transparent 52%),
+    linear-gradient(225deg,transparent 48%,#1e1b4b 48%,#1e1b4b 52%,transparent 52%),
+    linear-gradient(315deg,transparent 30%,#0f172a 30%,#0f172a 70%,transparent 70%),
+    linear-gradient(45deg,#1e293b 20%,transparent 20%,transparent 80%,#1e1b4b 80%);opacity:.4}
 .auth-card{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:48px 44px;width:430px;max-width:100%;box-shadow:0 20px 60px rgba(99,102,241,.08)}
 .auth-card .auth-icon{text-align:center;margin-bottom:20px}
 .auth-card .auth-icon svg{width:48px;height:48px}

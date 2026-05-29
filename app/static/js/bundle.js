@@ -122,7 +122,7 @@ registerRoute('#/login', function(container) {
             '<div id="form-error" class="error"></div>' +
             '<button type="submit" class="btn-submit">'+(tab==='login'?'登 录':'创建账户')+'</button>' +
             '</form>' +
-            '<p class="footer-note">'+(tab==='login'?'还没有账户？点击「注册」':'已有账户？点击「登录」')+'<br>注册即表示同意 <a href="#/pricing" style="color:var(--accent)">服务条款</a> · 首个注册用户自动成为 <span>管理员</span></p>' +
+            '<p class="footer-note">'+(tab==='login'?'还没有账户？点击「注册」':'已有账户？点击「登录」')+'<br>注册即表示同意 <a href="#/pricing" style="color:var(--accent)">服务条款</a></p>' +
             '</div></div>';
         document.getElementById('tab-login').addEventListener('click',function(){tab='login';render()});
         document.getElementById('tab-register').addEventListener('click',function(){tab='register';render()});
