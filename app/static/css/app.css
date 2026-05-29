@@ -132,9 +132,11 @@ html{scroll-behavior:smooth}
 .tier-card button:disabled{opacity:.4;cursor:default;border-color:var(--border);color:var(--text-tertiary)}
 
 /* Chat */
-#chat-messages{height:440px;overflow-y:auto;padding:18px;margin-bottom:12px;background:var(--bg-hover);border-radius:var(--radius-lg);border:1px solid var(--border);scroll-behavior:smooth}
-#chat-messages::-webkit-scrollbar{width:4px}
-#chat-messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+#chat-messages{height:440px;overflow-y:auto;padding:18px 14px 18px 18px;margin-bottom:12px;background:var(--bg-hover);border-radius:var(--radius-lg);border:1px solid var(--border);scroll-behavior:auto}
+#chat-messages::-webkit-scrollbar{width:5px}
+#chat-messages::-webkit-scrollbar-track{background:transparent}
+#chat-messages::-webkit-scrollbar-thumb{background:var(--text-tertiary);border-radius:3px}
+#chat-messages::-webkit-scrollbar-thumb:hover{background:var(--text-secondary)}
 .chat-msg{margin-bottom:14px;display:flex;flex-direction:column;animation:msgIn .2s var(--ease)}
 @keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .chat-msg.user{align-items:flex-end}
@@ -260,6 +262,13 @@ h2{font-size:22px;font-weight:700;letter-spacing:-.03em;margin-bottom:20px}
 input:focus-visible,select:focus-visible,button:focus-visible{outline:none}
 ::selection{background:var(--accent-subtle)}
 button:active{transform:scale(.97)}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--text-tertiary);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--text-secondary)}
+*{scrollbar-width:thin;scrollbar-color:var(--text-tertiary) transparent}
 
 @media(max-width:768px){
     #app{padding:20px 14px 80px}
