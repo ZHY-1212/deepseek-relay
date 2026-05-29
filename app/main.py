@@ -55,9 +55,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from starlette.responses import Response
+
+class NoCacheStaticFiles(StaticFiles):
+    async def get_response(self, path: str, scope) -> Response:
+        response = await super().get_response(path, scope)
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
+
 static_dir = Path(__file__).parent / "static"
 static_dir.mkdir(parents=True, exist_ok=True)
-app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+app.mount("/static", NoCacheStaticFiles(directory=str(static_dir)), name="static")
 
 templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 
