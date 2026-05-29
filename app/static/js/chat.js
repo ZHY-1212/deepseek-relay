@@ -145,6 +145,7 @@ registerRoute('#/chat', (container) => {
                         以下为 24 小时前的历史消息
                     </div>` : ''}
                     ${visible.map(m => renderMessage(m)).join('')}
+                    <div id="chat-anchor"></div>
                     <div id="streaming-msg" class="chat-msg assistant" style="display:none">
                         <div class="role">
                             <span class="model-icon" id="stream-model-icon">✦</span>
@@ -209,15 +210,16 @@ registerRoute('#/chat', (container) => {
             </div>
         `;
 
-        // Restore scroll position after render
-        setTimeout(function() {
-            var md = document.getElementById('chat-messages');
-            if (md) {
-                if (wasAtBottom) md.scrollTop = md.scrollHeight;
-                else md.scrollTop = Math.min(scrollTop, md.scrollHeight);
-            }
-            document.getElementById('chat-input')?.focus();
-        }, 20);
+        // Instantly anchor to bottom without visual scroll
+        var md = document.getElementById('chat-messages');
+        var anchor = document.getElementById('chat-anchor');
+        if (md && anchor && wasAtBottom) {
+            anchor.scrollIntoView({block: 'end'});
+        } else if (md && wasAtBottom) {
+            md.scrollTop = md.scrollHeight;
+        }
+        var inp = document.getElementById('chat-input');
+        if (inp) inp.focus();
 
         // Persist model selection
         document.getElementById('model-select').addEventListener('change', function() {
