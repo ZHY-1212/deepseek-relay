@@ -112,7 +112,7 @@ registerRoute('#/chat', function(container) {
         var linkBtn=document.getElementById('btn-link'); if(linkBtn) linkBtn.addEventListener('click', function(){var u=prompt('粘贴图片链接：');if(u&&u.trim()){pendingImage={dataUrl:u.trim(),filename:'link'};render();showToast('图片链接已添加','success')}});
         var fileInp=document.getElementById('file-input'); if(fileInp) fileInp.addEventListener('change', handleFile);
         if(pendingImage) document.getElementById('img-remove').addEventListener('click',function(){pendingImage=null;document.getElementById('file-input').value='';render()});
-        document.getElementById('model-select').addEventListener('change',function(){selectedModel=this.value;localStorage.setItem('chat_model',selectedModel)});
+        document.getElementById('model-select').addEventListener('change',function(){selectedModel=this.value;localStorage.setItem('chat_model',selectedModel);render()});
         var lb = document.getElementById('btn-load-history'); if(lb) lb.addEventListener('click',function(){showHistory=true;render()});
         var cb = document.getElementById('btn-clear'); if(cb) cb.addEventListener('click',function(){if(confirm('清空所有对话？')) clearAll()});
         bindActions();
