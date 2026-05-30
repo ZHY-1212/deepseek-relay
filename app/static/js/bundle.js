@@ -513,10 +513,13 @@ registerRoute('#/docgen', function(container) {
             });
             if(!resp.ok){var e=await resp.json().catch(function(){return{}});throw new Error(e.detail||'生成失败，请重试')}
             var blob=await resp.blob();
+            var ext=selectedType==='pptx'?'pptx':selectedType==='xlsx'?'xlsx':'docx';
+            var filename='AI生成_'+(prompt.slice(0,15).replace(/[^一-龥a-zA-Z0-9]/g,''))+'.'+ext;
             var a=document.createElement('a');a.href=URL.createObjectURL(blob);
-            a.download='document.'+(selectedType==='pptx'?'pptx':selectedType==='xlsx'?'xlsx':'docx');
-            a.click();URL.revokeObjectURL(a.href);
-            msg.className='inline-msg success';msg.textContent='✅ 文件已下载！AI 为你生成了 '+prompt.slice(0,20)+'... 的文档';
+            a.download=filename;a.style.display='none';
+            document.body.appendChild(a);a.click();
+            setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(a.href)},1000);
+            msg.className='inline-msg success';msg.textContent='✅ 下载中：'+filename+' · 若未自动下载请检查浏览器设置';
             soundSuccess?.(null);
         } catch(err){
             msg.className='inline-msg error';msg.textContent='❌ '+err.message;
