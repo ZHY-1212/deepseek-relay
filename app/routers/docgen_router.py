@@ -37,8 +37,10 @@ async def generate(request: Request, body: DocGenRequest):
         "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     }
 
+    from urllib.parse import quote
+    safe_name = quote(filename, safe='')
     return Response(
         content=file_bytes,
         media_type=media_types[body.doc_type],
-        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{filename}"},
+        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{safe_name}"},
     )
