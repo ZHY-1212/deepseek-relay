@@ -466,27 +466,26 @@ registerRoute('#/docgen', function(container) {
 
     function render() {
         container.innerHTML =
-            '<div class="page-header"><h2>AI 文档生成</h2><p>一句话描述需求，AI自动生成 PPT / Excel / Word 文件</p></div>'+
+            '<div class="page-header"><h2>AI 文档生成</h2><p>输入需求，AI 自动生成 PPT · Excel · Word 并下载</p></div>'+
 
-            '<div class="card"><div class="section-title" style="margin-top:0">选择文件类型</div>'+
-            '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">'+
-            '<div class="stat-card" style="text-align:center;cursor:pointer;border:'+(selectedType==='pptx'?'2px solid var(--blue)':'1px solid var(--border)')+'" id="type-pptx"><div style="font-size:36px;margin-bottom:8px">📊</div><div style="font-weight:650">PPT 演示</div><div style="font-size:11px;color:var(--text-secondary)">.pptx</div></div>'+
-            '<div class="stat-card" style="text-align:center;cursor:pointer;border:'+(selectedType==='xlsx'?'2px solid var(--blue)':'1px solid var(--border)')+'" id="type-xlsx"><div style="font-size:36px;margin-bottom:8px">📈</div><div style="font-weight:650">Excel 表格</div><div style="font-size:11px;color:var(--text-secondary)">.xlsx</div></div>'+
-            '<div class="stat-card" style="text-align:center;cursor:pointer;border:'+(selectedType==='docx'?'2px solid var(--blue)':'1px solid var(--border)')+'" id="type-docx"><div style="font-size:36px;margin-bottom:8px">📄</div><div style="font-weight:650">Word 文档</div><div style="font-size:11px;color:var(--text-secondary)">.docx</div></div>'+
+            '<div class="card"><div style="font-size:15px;font-weight:650;margin-bottom:14px;letter-spacing:-.01em">选择文件类型</div>'+
+            '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px">'+
+            '<div class="tier-card" style="cursor:pointer;border:'+(selectedType==='pptx'?'2px solid var(--blue)':'1px solid var(--border)')+';box-shadow:none" id="type-pptx"><div style="font-size:40px;margin-bottom:8px">📊</div><div style="font-weight:650;font-size:15px">PPT 演示</div><div style="font-size:11px;color:var(--text-secondary)">.pptx</div></div>'+
+            '<div class="tier-card" style="cursor:pointer;border:'+(selectedType==='xlsx'?'2px solid var(--blue)':'1px solid var(--border)')+';box-shadow:none" id="type-xlsx"><div style="font-size:40px;margin-bottom:8px">📈</div><div style="font-weight:650;font-size:15px">Excel 表格</div><div style="font-size:11px;color:var(--text-secondary)">.xlsx</div></div>'+
+            '<div class="tier-card" style="cursor:pointer;border:'+(selectedType==='docx'?'2px solid var(--blue)':'1px solid var(--border)')+';box-shadow:none" id="type-docx"><div style="font-size:40px;margin-bottom:8px">📄</div><div style="font-weight:650;font-size:15px">Word 文档</div><div style="font-size:11px;color:var(--text-secondary)">.docx</div></div>'+
             '</div>'+
 
-            '<div style="font-weight:600;margin-bottom:8px">描述你的需求</div>'+
-            '<textarea id="prompt" placeholder="例如：做一个关于2025年AI行业趋势的PPT，包含市场规模、关键技术、主要玩家、未来展望四个章节" style="width:100%;min-height:100px;padding:12px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;font-family:var(--font);background:var(--bg-input);color:var(--text);resize:vertical;line-height:1.6"></textarea>'+
-            '<div style="display:flex;gap:10px;align-items:center;margin-top:12px">'+
-            '<button class="btn-primary" id="btn-generate" style="padding:12px 28px;font-size:15px">'+(loading?'生成中...':'🚀 生成文档')+'</button>'+
-            '<span style="font-size:12px;color:var(--text-tertiary)">生成约需 10-30 秒，文件自动下载</span></div>'+
-            '<div id="gen-msg" class="inline-msg" style="margin-top:12px"></div></div>'+
+            '<div style="font-weight:650;font-size:14px;margin-bottom:8px;letter-spacing:-.01em">描述你的需求</div>'+
+            '<textarea id="prompt" placeholder="例如：做一个2025年AI行业趋势PPT，包含市场规模、关键技术、主要玩家、未来展望" style="width:100%;min-height:110px;padding:14px 16px;border:1px solid var(--border);border-radius:14px;font-size:14.5px;font-family:var(--font);background:var(--bg-input);color:var(--text);resize:vertical;line-height:1.7;outline:none;letter-spacing:-.01em;transition:border .15s"></textarea>'+
 
-            '<div class="card"><div style="font-weight:600;margin-bottom:10px">使用示例</div>'+
+            '<button class="btn-primary" id="btn-generate" style="width:100%;padding:14px;border-radius:16px;font-size:16px;font-weight:600;letter-spacing:-.02em;margin-top:14px;transition:all .2s">'+(loading?'<span style="display:inline-flex;align-items:center;gap:8px"><span style="width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:inline-block"></span>AI 正在生成文档...</span>':'✨ 开始生成')+'</button>'+
+            '<div id="gen-msg" class="inline-msg" style="margin-top:14px;text-align:center;font-size:13px"></div></div>'+
+
+            '<div class="card"><div style="font-weight:650;font-size:14px;margin-bottom:12px;letter-spacing:-.01em">快速模板</div>'+
             '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;font-size:13px;color:var(--text-secondary)">'+
-            '<div class="stat-card" style="cursor:pointer" onclick="document.getElementById(\'prompt\').value=\'做一个2025年AI行业趋势分析PPT，包含市场规模、关键技术、主要玩家、未来展望\';document.getElementById(\'type-pptx\').click()"><strong>📊 PPT示例</strong><br>2025年AI行业趋势分析</div>'+
-            '<div class="stat-card" style="cursor:pointer" onclick="document.getElementById(\'prompt\').value=\'生成一个员工工资表，包含姓名、部门、基本工资、奖金、实发工资5列，10行数据\';document.getElementById(\'type-xlsx\').click()"><strong>📈 Excel示例</strong><br>员工工资表模板</div>'+
-            '<div class="stat-card" style="cursor:pointer" onclick="document.getElementById(\'prompt\').value=\'写一份项目总结报告，包含项目背景、目标、执行过程、成果和下一步计划\';document.getElementById(\'type-docx\').click()"><strong>📄 Word示例</strong><br>项目总结报告</div>'+
+            tmpl('📊 行业趋势PPT', '做一个2025年AI行业趋势分析PPT，包含市场规模、关键技术、主要玩家、未来展望', 'pptx')+
+            tmpl('📈 工资表模板', '生成一个员工工资表，包含姓名、部门、基本工资、奖金、实发工资5列，10行数据', 'xlsx')+
+            tmpl('📄 项目总结报告', '写一份项目总结报告，包含项目背景、目标、执行过程、成果和下一步计划', 'docx')+
             '</div></div>';
 
         document.getElementById('type-pptx').addEventListener('click',function(){selectedType='pptx';render()});
@@ -495,31 +494,34 @@ registerRoute('#/docgen', function(container) {
         document.getElementById('btn-generate').addEventListener('click',doGenerate);
     }
 
+    function tmpl(label,prompt,type){
+        return '<div class="stat-card" style="cursor:pointer;padding:14px 16px" onclick="document.getElementById(\'prompt\').value=\''+prompt.replace(/'/g,"\\'")+'\';selectedType=\''+type+'\';render()"><strong>'+label+'</strong><div style="margin-top:4px;font-size:12px">'+prompt.slice(0,40)+'...</div></div>';
+    }
+
     async function doGenerate() {
         var prompt = document.getElementById('prompt').value.trim();
         if (prompt.length < 5) { showToast('需求描述至少5个字','error'); return; }
         var msg = document.getElementById('gen-msg');
-        msg.className = 'inline-msg'; msg.textContent = 'AI 正在生成文档，请稍候...'; msg.style.display = 'block';
+        msg.className = 'inline-msg'; msg.textContent = '⏳ AI 正在分析需求并生成文档...'; msg.style.display = 'block';
         loading = true; render();
 
         try {
-            var resp = await fetch('/docgen/generate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + api.getToken() },
-                body: JSON.stringify({ doc_type: selectedType, prompt: prompt })
+            var resp = await fetch('/docgen/generate',{
+                method:'POST',
+                headers:{'Content-Type':'application/json','Authorization':'Bearer '+api.getToken()},
+                body:JSON.stringify({doc_type:selectedType,prompt:prompt})
             });
-            if (!resp.ok) { var e = await resp.json().catch(function(){return{}}); throw new Error(e.detail || '生成失败'); }
-            var blob = await resp.blob();
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement('a'); a.href = url;
-            var ext = selectedType === 'pptx' ? 'pptx' : selectedType === 'xlsx' ? 'xlsx' : 'docx';
-            a.download = 'document.' + ext; a.click();
-            URL.revokeObjectURL(url);
-            msg.className = 'inline-msg success'; msg.textContent = '✅ 文件已下载！';
-        } catch (err) {
-            msg.className = 'inline-msg error'; msg.textContent = '❌ ' + err.message;
+            if(!resp.ok){var e=await resp.json().catch(function(){return{}});throw new Error(e.detail||'生成失败，请重试')}
+            var blob=await resp.blob();
+            var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+            a.download='document.'+(selectedType==='pptx'?'pptx':selectedType==='xlsx'?'xlsx':'docx');
+            a.click();URL.revokeObjectURL(a.href);
+            msg.className='inline-msg success';msg.textContent='✅ 文件已下载！AI 为你生成了 '+prompt.slice(0,20)+'... 的文档';
+            soundSuccess?.(null);
+        } catch(err){
+            msg.className='inline-msg error';msg.textContent='❌ '+err.message;
         }
-        loading = false; render();
+        loading=false;render();
     }
 
     render();
