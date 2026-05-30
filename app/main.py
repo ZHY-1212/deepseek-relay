@@ -105,7 +105,9 @@ from app.routers.proxy_router import router as proxy_router
 from app.routers.dashboard_router import router as dashboard_router
 from app.routers.admin_router import router as admin_router
 from app.routers.payment_router import router as payment_router
+from app.routers.docgen_router import router as docgen_router
 
+app.include_router(docgen_router)
 app.include_router(auth_router)
 app.include_router(proxy_router)
 app.include_router(dashboard_router)
